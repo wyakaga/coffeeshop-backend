@@ -1,20 +1,9 @@
 const { Router } = require('express');
-const db = require('../configs/postgre')
+
+const productsController = require('../controllers/products.controller')
 
 const productsRouter = Router();
 
-productsRouter.get("/", async (req, res) => {
-  try {
-    const result = await db.query("SELECT * FROM products")
-    res.status(200).json({
-      data: result.rows
-    })
-  } catch (err) {
-    console.log(err.message)
-    res.status(500).json({
-      msg: "Internal Server Error",
-    })
-  }
-})
+productsRouter.get("/", productsController.getProducts)
 
 module.exports = productsRouter
