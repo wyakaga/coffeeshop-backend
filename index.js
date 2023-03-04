@@ -1,9 +1,11 @@
+require("dotenv").config();
+
 const express = require("express");
 const mainRouter = require("./src/routers")
 const morgan = require("morgan");
 
 const app = express();
-const PORT = 8080;
+const PORT = process.env.SERVER_PORT || 8080;
 
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
