@@ -2,7 +2,9 @@ const db = require("../configs/postgre");
 
 const getProducts = (query) => {
 	return new Promise((resolve, reject) => {
-		let sql = "SELECT * FROM products ORDER BY ";
+		let sql = `select p.id, p.product_name, p.price, p.product_img, c."name" as "category_name"
+		from products p
+		join categories c on p.category_id = c.id ORDER BY `;
 		let order = "id ASC";
 		if (query.order === "cheapest") {
 			order = "price ASC";
@@ -39,8 +41,13 @@ const getProductDetail = (params) => {
 const insertProducts = (data) => {
 	return new Promise((resolve, reject) => {
 		const sql =
-			"insert into products (product_name, price, product_img) values ($1, $2, $3) RETURNING *";
-		const values = [data.product_name, data.price, data.product_img];
+			"insert into products (product_name, price, product_img, category_id) values ($1, $2, $3, $4) RETURNING *";
+		const values = [
+			data.product_name,
+			data.price,
+			data.product_img,
+			data.category_id,
+		];
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
 			resolve(result);
