@@ -2,7 +2,9 @@ const usersModel = require("../models/users.model");
 
 const getUsers = async (req, res) => {
 	try {
-		const { limit } = req.query;
+		let { limit } = req.query;
+
+		limit = limit || 2;
 
 		const result = await usersModel.getUsers(limit);
 		console.log(limit);
