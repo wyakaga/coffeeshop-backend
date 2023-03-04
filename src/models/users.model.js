@@ -61,9 +61,21 @@ const updateUserData = (params, data) => {
 	});
 };
 
+const deleteUser = (params) => {
+	return new Promise((resolve, reject) => {
+		const sql = "DELETE FROM users WHERE id = $1 RETURNING *";
+		const values = [params.userId];
+		db.query(sql, values, (error, result) => {
+			if (error) return reject(error);
+			resolve(result);
+		});
+	});
+};
+
 module.exports = {
 	getUsers,
 	getUserDetail,
 	insertUsers,
 	updateUserData,
+	deleteUser
 };
