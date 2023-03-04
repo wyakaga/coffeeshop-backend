@@ -1,4 +1,6 @@
 const express = require("express");
+const mainRouter = require("./src/routers")
+const morgan = require("morgan");
 
 const app = express();
 const PORT = 8080;
@@ -6,7 +8,7 @@ const PORT = 8080;
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 
-const mainRouter = require("./src/routers")
+app.use(morgan("combined"))
 
 app.use(mainRouter)
 
