@@ -16,6 +16,21 @@ const getUsers = (limit) => {
 	});
 };
 
+const getUserDetail = (params) => {
+	return new Promise((resolve, reject) => {
+		const sql = "SELECT * FROM users WHERE id = $1";
+		const values = [params.userId];
+		db.query(sql, values, (error, result) => {
+			if (error) {
+				reject(error);
+				return;
+			}
+			resolve(result);
+		});
+	});
+};
+
 module.exports = {
 	getUsers,
+	getUserDetail,
 };
