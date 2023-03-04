@@ -66,9 +66,21 @@ const updateProduct = (params, data) => {
 	});
 };
 
+const deleteProduct = (params) => {
+	return new Promise((resolve, reject) => {
+		const sql = "DELETE FROM products WHERE id = $1 RETURNING *";
+		const values = [params.productId];
+		db.query(sql, values, (error, result) => {
+			if (error) return reject(error);
+			resolve(result);
+		});
+	});
+};
+
 module.exports = {
 	getProducts,
 	getProductDetail,
 	insertProducts,
-	updateProduct
+	updateProduct,
+	deleteProduct
 };

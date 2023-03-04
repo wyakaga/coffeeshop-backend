@@ -61,9 +61,25 @@ const updateProduct = async (req, res) => {
 	}
 };
 
+const deleteProduct = async (req, res) => {
+	try {
+		const { params } = req;
+		const result = await productsModel.deleteProduct(params);
+		res.status(200).json({
+			data: result.rows,
+		});
+	} catch (error) {
+		console.log(error.message);
+		res.status(500).json({
+			msg: "Internal Server Error",
+		});
+	}
+};
+
 module.exports = {
 	getProducts,
 	getProductDetail,
 	insertProducts,
-	updateProduct
+	updateProduct,
+	deleteProduct
 };
