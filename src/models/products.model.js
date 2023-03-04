@@ -55,8 +55,20 @@ const insertProducts = (data) => {
 	});
 };
 
+const updateProduct = (params, data) => {
+	return new Promise((resolve, reject) => {
+		const sql = "UPDATE products SET product_name = $1, price = $2, product_img = $3, category_id = $4 WHERE id = $5 RETURNING *";
+		const values = [data.product_name, data.price, data.product_img, data.category_id, params.productId];
+		db.query(sql, values, (error, result) => {
+			if (error) return reject(error);
+			resolve(result);
+		});
+	});
+};
+
 module.exports = {
 	getProducts,
 	getProductDetail,
 	insertProducts,
+	updateProduct
 };

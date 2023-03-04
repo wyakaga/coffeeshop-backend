@@ -45,8 +45,25 @@ const insertProducts = async (req, res) => {
 	}
 };
 
+const updateProduct = async (req, res) => {
+	try {
+		const { params } = req;
+		const { body } = req;
+		const result = await productsModel.updateProduct(params, body);
+		res.status(200).json({
+			data: result.rows,
+		});
+	} catch (error) {
+		console.log(error.message);
+		res.status(500).json({
+			msg: "Internal Server Error",
+		});
+	}
+};
+
 module.exports = {
 	getProducts,
 	getProductDetail,
 	insertProducts,
+	updateProduct
 };
