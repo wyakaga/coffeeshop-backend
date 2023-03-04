@@ -2,7 +2,7 @@ const productsModel = require("../models/products.model");
 
 const getProducts = async (req, res) => {
 	try {
-    const {query} = req
+		const { query } = req;
 		const result = await productsModel.getProducts(query);
 		res.status(200).json({
 			data: result.rows,
