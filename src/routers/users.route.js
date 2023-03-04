@@ -7,5 +7,6 @@ const usersRouter = Router();
 usersRouter.get("/", usersController.getUsers);
 usersRouter.get("/:userId", usersController.getUserDetail);
 usersRouter.post("/", usersController.insertUsers);
+usersRouter.patch("/:userId", usersController.updateUserData);
 
 module.exports = usersRouter;

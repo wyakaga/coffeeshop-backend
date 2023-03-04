@@ -41,8 +41,29 @@ const insertUsers = (data) => {
 	});
 };
 
+const updateUserData = (params, data) => {
+	return new Promise((resolve, reject) => {
+		const sql =
+			"UPDATE users SET address = $1, display_name = $2, first_name = $3, last_name = $4, birth_date = $5, gender = $6 WHERE id = $7 RETURNING *";
+		const values = [
+			data.address,
+			data.display_name,
+			data.first_name,
+			data.last_name,
+			data.birth_date,
+			data.gender,
+			params.userId,
+		];
+		db.query(sql, values, (error, result) => {
+			if (error) return reject(error);
+			resolve(result);
+		});
+	});
+};
+
 module.exports = {
 	getUsers,
 	getUserDetail,
 	insertUsers,
+	updateUserData,
 };
