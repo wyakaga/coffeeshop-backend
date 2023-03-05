@@ -2,17 +2,20 @@ const db = require("../configs/postgre");
 
 const getPromos = (query) => {
 	return new Promise((resolve, reject) => {
-		let sql = `select id, product_img, product_name, concat(discount, '%') as discount,
-    promo_desc, promo_code, promo_start, promo_end
-    from promos order by `;
-		let order = "id ASC";
+		let order;
 		if (query.order === "recent") {
 			order = "promo_start DESC";
 		}
 		if (query.order === "oldest") {
 			order = "promo_start ASC";
 		}
-		sql += order;
+
+		const sql = `select id, product_img, product_name, concat(discount, '%') as discount,
+    promo_desc, promo_code, promo_start, promo_end
+    from promos
+		where product_name ilike '%${query.search || ""}%'
+		order by ${order || "id asc"}
+		limit ${query.limit || 5}`;
 
 		db.query(sql, (err, result) => {
 			if (err) return reject(err);
@@ -24,7 +27,7 @@ const getPromos = (query) => {
 const getPromoDetail = (params) => {
 	return new Promise((resolve, reject) => {
 		const sql = `SELECT id, product_img, product_name, concat(discount, '%') as discount,
-		 				promo_desc, promo_code, promo_start, promo_end FROM promos WHERE id = $1`;
+		promo_desc, promo_code, promo_start, promo_end FROM promos WHERE id = $1`;
 		const values = [params.promoId];
 		db.query(sql, values, (err, result) => {
 			if (err) return reject(err);
@@ -36,7 +39,7 @@ const getPromoDetail = (params) => {
 const insertPromos = (data) => {
 	return new Promise((resolve, reject) => {
 		const sql = `INSERT INTO promos (product_img, product_name, discount, promo_desc, promo_code, promo_start, promo_end)
-						VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`;
+		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`;
 		const values = [
 			data.product_img,
 			data.product_name,
