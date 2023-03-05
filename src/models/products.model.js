@@ -10,7 +10,7 @@ const getProducts = (query) => {
 			order = "price DESC";
 		}
 
-		let sql = `select p.id, p.product_name, p.price, p.product_img, c."name" as "category_name"
+		const sql = `select p.id, p.product_name, p.price, p.product_img, c."name" as "category_name"
 		from products p
 		join categories c on p.category_id = c.id
 		where p.product_name ilike '%${query.search || ""}%'
@@ -34,7 +34,7 @@ const getProductDetail = (params) => {
 		JOIN categories c on p.category_id = c.id
 		WHERE p.id = $1`;
 		const values = [params.productId];
-		
+
 		db.query(sql, values, (error, result) => {
 			if (error) {
 				reject(error);
