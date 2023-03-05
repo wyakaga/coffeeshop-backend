@@ -46,6 +46,7 @@ const insertUsers = async (req, res) => {
 		const result = await usersModel.insertUsers(body);
 		res.status(201).json({
 			data: result.rows,
+			msg: "Created Successfully",
 		});
 	} catch (error) {
 		console.log(error.message);
@@ -62,6 +63,7 @@ const updateUserData = async (req, res) => {
 		const result = await usersModel.updateUserData(params, body);
 		res.status(200).json({
 			data: result.rows,
+			msg: "Updated Successfully",
 		});
 	} catch (error) {
 		console.log(error.message);
@@ -77,6 +79,7 @@ const deleteUser = async (req, res) => {
 		const result = await usersModel.deleteUser(params);
 		res.status(200).json({
 			data: result.rows,
+			msg: "Deleted Successfully",
 		});
 	} catch (error) {
 		console.log(error.message);
