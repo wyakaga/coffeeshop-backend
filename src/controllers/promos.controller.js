@@ -69,7 +69,7 @@ const deletePromo = async (req, res) => {
 			data: result.rows,
 		});
 	} catch (error) {
-		console.log(error);
+		console.log(error.message);
 		res.status(500).json({
 			msg: "Internal Server Error",
 		});

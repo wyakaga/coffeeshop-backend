@@ -49,10 +49,21 @@ const updateHistory = (params, data) => {
 			data.order_status,
 			params.historyId,
 		];
-    db.query(sql, values, (err, result) => {
-      if (err) return reject(err);
-      resolve(result);
-    });
+		db.query(sql, values, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
+const deleteHistory = (params) => {
+	return new Promise((resolve, reject) => {
+		const sql = `DELETE FROM history WHERE id = $1 RETURNING *`;
+		const values = [params.historyId];
+		db.query(sql, values, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
 	});
 };
 
@@ -60,5 +71,6 @@ module.exports = {
 	getHistory,
 	getHistoryDetail,
 	insertHistory,
-  updateHistory,
+	updateHistory,
+	deleteHistory,
 };

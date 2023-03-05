@@ -54,7 +54,22 @@ const updateHistory = async (req, res) => {
       data: result.rows,
     });
   } catch (error) {
-    console.log(error);
+    console.log(error.message);
+    res.status(500).json({
+      msg: "Internal Server Error",
+    });
+  }
+};
+
+const deleteHistory = async (req, res) => {
+  try {
+    const { params } = req;
+    const result = await historyModel.deleteHistory(params);
+    res.status(200).json({
+      data: result.rows,
+    });
+  } catch (error) {
+    console.log(error.message);
     res.status(500).json({
       msg: "Internal Server Error",
     });
@@ -66,4 +81,5 @@ module.exports = {
 	getHistoryDetail,
 	insertHistory,
   updateHistory,
+  deleteHistory,
 };
