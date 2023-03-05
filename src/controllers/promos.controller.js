@@ -30,7 +30,23 @@ const getPromoDetail = async (req, res) => {
 	}
 };
 
+const insertPromos = async (req, res) => {
+	try {
+		const { body } = req;
+		const result = await promosModel.insertPromos(body);
+		res.status(201).json({
+			data: result.rows,
+		});
+	} catch (error) {
+		console.log(error.message);
+		res.status(500).json({
+			msg: "Internal Server Error",
+		});
+	}
+};
+
 module.exports = {
 	getPromos,
 	getPromoDetail,
+	insertPromos,
 };

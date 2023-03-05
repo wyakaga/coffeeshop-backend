@@ -33,7 +33,28 @@ const getPromoDetail = (params) => {
 	});
 };
 
+const insertPromos = (data) => {
+	return new Promise((resolve, reject) => {
+		const sql = `INSERT INTO promos (product_img, product_name, discount, promo_desc, promo_code, promo_start, promo_end)
+						VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`;
+		const values = [
+			data.product_img,
+			data.product_name,
+			data.discount,
+			data.promo_desc,
+			data.promo_code,
+			data.promo_start,
+			data.promo_end,
+		];
+		db.query(sql, values, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
 module.exports = {
 	getPromos,
 	getPromoDetail,
+	insertPromos,
 };
