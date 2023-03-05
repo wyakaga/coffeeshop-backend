@@ -15,6 +15,22 @@ const getHistory = async (req, res) => {
 	}
 };
 
+const getHistoryDetail = async (req, res) => {
+	try {
+		const { params } = req;
+		const result = await historyModel.getHistoryDetail(params);
+		res.status(200).json({
+			data: result.rows,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({
+			msg: "Internal Server Error",
+		});
+	}
+};
+
 module.exports = {
 	getHistory,
+	getHistoryDetail,
 };
