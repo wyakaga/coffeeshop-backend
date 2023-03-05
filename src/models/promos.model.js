@@ -2,15 +2,15 @@ const db = require("../configs/postgre");
 
 const getPromos = (query) => {
 	return new Promise((resolve, reject) => {
-		let sql = `select product_img, product_name, concat(discount, '%') as discount,
+		let sql = `select id, product_img, product_name, concat(discount, '%') as discount,
     promo_desc, promo_code, promo_start, promo_end
     from promos order by `;
 		let order = "id ASC";
 		if (query.order === "recent") {
-			order = "promo_end DESC";
+			order = "promo_start DESC";
 		}
 		if (query.order === "oldest") {
-			order = "promo_end ASC";
+			order = "promo_start ASC";
 		}
 		sql += order;
 
@@ -23,7 +23,7 @@ const getPromos = (query) => {
 
 const getPromoDetail = (params) => {
 	return new Promise((resolve, reject) => {
-		const sql = `SELECT product_img, product_name, concat(discount, '%') as discount,
+		const sql = `SELECT id, product_img, product_name, concat(discount, '%') as discount,
 		 				promo_desc, promo_code, promo_start, promo_end FROM promos WHERE id = $1`;
 		const values = [params.promoId];
 		db.query(sql, values, (err, result) => {
@@ -75,9 +75,21 @@ const updatePromo = (params, data) => {
 	});
 };
 
+const deletePromo = (params) => {
+	return new Promise((resolve, reject) => {
+		const sql = "DELETE FROM promos WHERE id = $1 RETURNING *";
+		const values = [params.promoId];
+		db.query(sql, values, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
 module.exports = {
 	getPromos,
 	getPromoDetail,
 	insertPromos,
 	updatePromo,
+	deletePromo,
 };
