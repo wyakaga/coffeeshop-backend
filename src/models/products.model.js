@@ -34,6 +34,7 @@ const getProductDetail = (params) => {
 		JOIN categories c on p.category_id = c.id
 		WHERE p.id = $1`;
 		const values = [params.productId];
+		
 		db.query(sql, values, (error, result) => {
 			if (error) {
 				reject(error);
