@@ -6,5 +6,6 @@ const historyRouter = Router();
 
 historyRouter.get("/", historyController.getHistory);
 historyRouter.get("/:historyId", historyController.getHistoryDetail);
+historyRouter.post("/", historyController.insertHistory);
 
 module.exports = historyRouter;
