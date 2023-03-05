@@ -4,6 +4,11 @@ const getProducts = async (req, res) => {
 	try {
 		const { query } = req;
 		const result = await productsModel.getProducts(query);
+
+		if (result.rows.length < 1) {
+			res.status(404).json({ msg: "Data Not Found" });
+		}
+
 		res.status(200).json({
 			data: result.rows,
 		});
@@ -19,6 +24,10 @@ const getProductDetail = async (req, res) => {
 	try {
 		const { params } = req;
 		const result = await productsModel.getProductDetail(params);
+
+		if (result.rows.length < 1) {
+			res.status(404).json({ msg: "Data Not Found" });
+		}
 		res.status(200).json({
 			data: result.rows,
 		});
@@ -36,6 +45,7 @@ const insertProducts = async (req, res) => {
 		const result = await productsModel.insertProducts(body);
 		res.status(201).json({
 			data: result.rows,
+			msg: "Created Successfully",
 		});
 	} catch (error) {
 		console.log(error.message);
@@ -52,6 +62,7 @@ const updateProduct = async (req, res) => {
 		const result = await productsModel.updateProduct(params, body);
 		res.status(200).json({
 			data: result.rows,
+			msg: "Updated Successfully",
 		});
 	} catch (error) {
 		console.log(error.message);
@@ -67,6 +78,7 @@ const deleteProduct = async (req, res) => {
 		const result = await productsModel.deleteProduct(params);
 		res.status(200).json({
 			data: result.rows,
+			msg: "Deleted Successfully",
 		});
 	} catch (error) {
 		console.log(error.message);
@@ -81,5 +93,5 @@ module.exports = {
 	getProductDetail,
 	insertProducts,
 	updateProduct,
-	deleteProduct
+	deleteProduct,
 };

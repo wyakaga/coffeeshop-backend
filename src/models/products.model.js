@@ -2,17 +2,20 @@ const db = require("../configs/postgre");
 
 const getProducts = (query) => {
 	return new Promise((resolve, reject) => {
-		let sql = `select p.id, p.product_name, p.price, p.product_img, c."name" as "category_name"
-		from products p
-		join categories c on p.category_id = c.id ORDER BY `;
-		let order = "id ASC";
+		let order;
 		if (query.order === "cheapest") {
 			order = "price ASC";
 		}
 		if (query.order === "priciest") {
 			order = "price DESC";
 		}
-		sql += order;
+
+		let sql = `select p.id, p.product_name, p.price, p.product_img, c."name" as "category_name"
+		from products p
+		join categories c on p.category_id = c.id
+		where p.product_name ilike '%${query.search || ""}%'
+		order by ${order || "id asc"}
+		limit ${query.limit || 5}`;
 
 		db.query(sql, (error, result) => {
 			if (error) {
@@ -26,7 +29,10 @@ const getProducts = (query) => {
 
 const getProductDetail = (params) => {
 	return new Promise((resolve, reject) => {
-		const sql = "SELECT * FROM products WHERE id = $1";
+		const sql = `SELECT p.id, p.product_name, p.price, p.product_img, c."name" as "category_name"
+		FROM products p
+		JOIN categories c on p.category_id = c.id
+		WHERE p.id = $1`;
 		const values = [params.productId];
 		db.query(sql, values, (error, result) => {
 			if (error) {
@@ -57,8 +63,15 @@ const insertProducts = (data) => {
 
 const updateProduct = (params, data) => {
 	return new Promise((resolve, reject) => {
-		const sql = "UPDATE products SET product_name = $1, price = $2, product_img = $3, category_id = $4 WHERE id = $5 RETURNING *";
-		const values = [data.product_name, data.price, data.product_img, data.category_id, params.productId];
+		const sql =
+			"UPDATE products SET product_name = $1, price = $2, product_img = $3, category_id = $4 WHERE id = $5 RETURNING *";
+		const values = [
+			data.product_name,
+			data.price,
+			data.product_img,
+			data.category_id,
+			params.productId,
+		];
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
 			resolve(result);
@@ -82,5 +95,5 @@ module.exports = {
 	getProductDetail,
 	insertProducts,
 	updateProduct,
-	deleteProduct
+	deleteProduct,
 };
