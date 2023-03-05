@@ -1,10 +1,22 @@
 const db = require("../configs/postgre");
 
-const getUsers = (limit) => {
+const getUsers = (query) => {
 	return new Promise((resolve, reject) => {
+		let order;
+		if (query.order === "asc") {
+			order = "display_name asc";
+		}
+		if (query.order === "desc") {
+			order = "display_name desc";
+		}
+
 		let sql = `select u.id, u."email", u."password", u."phone_number", u."address", u."display_name",
 		u."first_name", u."last_name", u."birth_date", u."gender", r."name" as "role_name"
-		from users u join roles r on u.role_id = r.id ORDER BY id ASC LIMIT ${limit}`;
+		from users u join roles r on u.role_id = r.id
+		where u.email ilike '%${query.search || ""}%'
+		order by ${order || "id asc"}
+		limit ${query.limit || 3}`;
+
 		db.query(sql, (err, result) => {
 			if (err) {
 				reject(err);
@@ -17,8 +29,12 @@ const getUsers = (limit) => {
 
 const getUserDetail = (params) => {
 	return new Promise((resolve, reject) => {
-		const sql = "SELECT * FROM users WHERE id = $1";
+		const sql = `SELECT u.id, u."email", u."password", u."phone_number", u."address", u."display_name",
+		u."first_name", u."last_name", u."birth_date", u."gender", r."name" as "role_name"
+		FROM users u JOIN roles r ON u.role_id = r.id
+		WHERE u.id = $1`;
 		const values = [params.userId];
+
 		db.query(sql, values, (error, result) => {
 			if (error) {
 				reject(error);
@@ -77,5 +93,5 @@ module.exports = {
 	getUserDetail,
 	insertUsers,
 	updateUserData,
-	deleteUser
+	deleteUser,
 };

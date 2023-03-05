@@ -2,12 +2,13 @@ const usersModel = require("../models/users.model");
 
 const getUsers = async (req, res) => {
 	try {
-		let { limit } = req.query;
+		const { query } = req;
+		const result = await usersModel.getUsers(query);
 
-		limit = limit || 2;
+		if (result.rows.length < 1) {
+			res.status(404).json({ msg: "Data Not Found" });
+		}
 
-		const result = await usersModel.getUsers(limit);
-		console.log(limit);
 		res.status(200).json({
 			data: result.rows,
 		});
@@ -23,6 +24,11 @@ const getUserDetail = async (req, res) => {
 	try {
 		const { params } = req;
 		const result = await usersModel.getUserDetail(params);
+
+		if (result.rows.length < 1) {
+			res.status(404).json({ msg: "Data Not Found" });
+		}
+
 		res.status(200).json({
 			data: result.rows,
 		});
@@ -67,7 +73,7 @@ const updateUserData = async (req, res) => {
 
 const deleteUser = async (req, res) => {
 	try {
-		const { params }  = req;
+		const { params } = req;
 		const result = await usersModel.deleteUser(params);
 		res.status(200).json({
 			data: result.rows,
@@ -85,5 +91,5 @@ module.exports = {
 	getUserDetail,
 	insertUsers,
 	updateUserData,
-	deleteUser
+	deleteUser,
 };
