@@ -31,6 +31,24 @@ const insertHistory = (data) => {
 			data.product_img,
 			data.order_status,
 		];
+		db.query(sql, values, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
+const updateHistory = (params, data) => {
+	return new Promise((resolve, reject) => {
+		const sql = `UPDATE history SET product_name = $1, price = $2, product_img = $3,order_status = $4
+    WHERE id = $5 RETURNING *`;
+		const values = [
+			data.product_name,
+			data.price,
+			data.product_img,
+			data.order_status,
+			params.historyId,
+		];
     db.query(sql, values, (err, result) => {
       if (err) return reject(err);
       resolve(result);
@@ -41,5 +59,6 @@ const insertHistory = (data) => {
 module.exports = {
 	getHistory,
 	getHistoryDetail,
-  insertHistory,
+	insertHistory,
+  updateHistory,
 };
