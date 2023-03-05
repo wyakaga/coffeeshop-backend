@@ -10,7 +10,7 @@ const getUsers = (query) => {
 			order = "display_name desc";
 		}
 
-		let sql = `select u.id, u."email", u."password", u."phone_number", u."address", u."display_name",
+		const sql = `select u.id, u."email", u."password", u."phone_number", u."address", u."display_name",
 		u."first_name", u."last_name", u."birth_date", u."gender", r."name" as "role_name"
 		from users u join roles r on u.role_id = r.id
 		where u.email ilike '%${query.search || ""}%'
