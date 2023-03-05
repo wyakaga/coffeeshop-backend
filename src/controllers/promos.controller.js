@@ -45,8 +45,25 @@ const insertPromos = async (req, res) => {
 	}
 };
 
+const updatePromo = async (req, res) => {
+	try {
+		const {params} = req;
+		const {body} = req;
+		const result = await promosModel.updatePromo(params, body);
+		res.status(200).json({
+			data: result.rows,
+		});
+	} catch (error) {
+		console.log(error.message);
+		res.status(500).json({
+			msg: "Internal Server Error",
+		});
+	}
+};
+
 module.exports = {
 	getPromos,
 	getPromoDetail,
 	insertPromos,
+	updatePromo,
 };

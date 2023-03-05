@@ -53,8 +53,31 @@ const insertPromos = (data) => {
 	});
 };
 
+const updatePromo = (params, data) => {
+	return new Promise((resolve, reject) => {
+		const sql = `UPDATE promos
+		SET product_img = $1, product_name = $2, discount = $3, promo_desc = $4, promo_code = $5, promo_start = $6, promo_end = $7
+		WHERE id = $8 RETURNING *`;
+		const values = [
+			data.product_img,
+			data.product_name,
+			data.discount,
+			data.promo_desc,
+			data.promo_code,
+			data.promo_start,
+			data.promo_end,
+			params.promoId,
+		];
+		db.query(sql, values, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
 module.exports = {
 	getPromos,
 	getPromoDetail,
 	insertPromos,
+	updatePromo,
 };

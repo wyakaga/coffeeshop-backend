@@ -7,5 +7,6 @@ const promosRouter = Router();
 promosRouter.get("/", promosController.getPromos);
 promosRouter.get("/:promoId", promosController.getPromoDetail);
 promosRouter.post("/", promosController.insertPromos);
+promosRouter.patch("/:promoId", promosController.updatePromo);
 
 module.exports = promosRouter;
