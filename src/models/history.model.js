@@ -2,7 +2,19 @@ const db = require("../configs/postgre");
 
 const getHistory = (query) => {
 	return new Promise((resolve, reject) => {
-		let sql = `SELECT * FROM history LIMIT ${query.limit || 2}`;
+		let order;
+		if (query.order === "cheapest") {
+			order = "price ASC";
+		}
+		if (query.order === "priciest") {
+			order = "price DESC";
+		}
+
+		let sql = `SELECT * FROM history
+    WHERE product_name ILIKE '%${query.search || ""}%'
+    ORDER BY ${order || "id ASC"}
+    LIMIT ${query.limit || 5}`;
+
 		db.query(sql, (err, result) => {
 			if (err) return reject(err);
 			resolve(result);
