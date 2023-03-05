@@ -46,6 +46,7 @@ const insertHistory = async (req, res) => {
 		const result = await historyModel.insertHistory(body);
 		res.status(201).json({
 			data: result.rows,
+			msg: "Created Successfully",
 		});
 	} catch (error) {
 		console.log(error.message);
@@ -62,6 +63,7 @@ const updateHistory = async (req, res) => {
 		const result = await historyModel.updateHistory(params, body);
 		res.status(200).json({
 			data: result.rows,
+			msg: "Updated Successfully",
 		});
 	} catch (error) {
 		console.log(error.message);
@@ -77,6 +79,7 @@ const deleteHistory = async (req, res) => {
 		const result = await historyModel.deleteHistory(params);
 		res.status(200).json({
 			data: result.rows,
+			msg: "Deleted Successfully"
 		});
 	} catch (error) {
 		console.log(error.message);
