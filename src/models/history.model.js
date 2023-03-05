@@ -10,7 +10,7 @@ const getHistory = (query) => {
 			order = "price DESC";
 		}
 
-		let sql = `SELECT * FROM history
+		const sql = `SELECT * FROM history
     WHERE product_name ILIKE '%${query.search || ""}%'
     ORDER BY ${order || "id ASC"}
     LIMIT ${query.limit || 5}`;
