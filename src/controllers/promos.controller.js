@@ -7,6 +7,7 @@ const getPromos = async (req, res) => {
 
 		if (result.rows.length < 1) {
 			res.status(404).json({ msg: "Data Not Found" });
+			return;
 		}
 
 		res.status(200).json({
@@ -27,6 +28,7 @@ const getPromoDetail = async (req, res) => {
 
 		if (result.rows.length < 1) {
 			res.status(404).json({ msg: "Data Not Found" });
+			return;
 		}
 
 		res.status(200).json({

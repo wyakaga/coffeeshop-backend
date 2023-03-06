@@ -6,7 +6,8 @@ const getUsers = async (req, res) => {
 		const result = await usersModel.getUsers(query);
 
 		if (result.rows.length < 1) {
-			res.status(404).json({ msg: "Data Not Found" });
+			res.status(404).jsonp({ msg: "Data Not Found" });
+			return;
 		}
 
 		res.status(200).json({
@@ -27,6 +28,7 @@ const getUserDetail = async (req, res) => {
 
 		if (result.rows.length < 1) {
 			res.status(404).json({ msg: "Data Not Found" });
+			return;
 		}
 
 		res.status(200).json({
