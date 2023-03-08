@@ -13,11 +13,13 @@ const getPromos = (query) => {
 		const sql = `select id, product_img, product_name, concat(discount, '%') as discount,
     promo_desc, promo_code, promo_start, promo_end
     from promos
-		where product_name ilike '%${query.search || ""}%'
+		where product_name ilike $1
 		order by ${order || "id asc"}
-		limit ${query.limit || 5}`;
+		limit $2`;
 
-		db.query(sql, (err, result) => {
+		const values = [`%${query.search || ""}%`, `${query.limit || 5}`];
+
+		db.query(sql, values, (err, result) => {
 			if (err) return reject(err);
 			resolve(result);
 		});

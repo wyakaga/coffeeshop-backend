@@ -13,11 +13,13 @@ const getUsers = (query) => {
 		const sql = `select u.id, u."email", u."phone_number", u."address", u."display_name",
 		u."first_name", u."last_name", u."birth_date", u."gender", r."name" as "role_name"
 		from users u join roles r on u.role_id = r.id
-		where u.email ilike '%${query.search || ""}%'
+		where u.email ilike $1
 		order by ${order || "id asc"}
-		limit ${query.limit || 3}`;
+		limit $2`;
 
-		db.query(sql, (err, result) => {
+		const values = [`%${query.search || ""}%`, `${query.limit || 3}`];
+
+		db.query(sql, values, (err, result) => {
 			if (err) {
 				reject(err);
 				return;

@@ -11,11 +11,16 @@ const getHistory = (query) => {
 		}
 
 		const sql = `SELECT * FROM history
-    WHERE product_name ILIKE '%${query.search || ""}%'
+    WHERE product_name ILIKE $1
     ORDER BY ${order || "id ASC"}
-    LIMIT ${query.limit || 5}`;
+    LIMIT $2`;
 
-		db.query(sql, (err, result) => {
+		const values = [
+			`%${query.search || ""}%`,
+			`${query.limit || 5}`,
+		];
+
+		db.query(sql, values, (err, result) => {
 			if (err) return reject(err);
 			resolve(result);
 		});

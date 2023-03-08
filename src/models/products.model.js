@@ -13,11 +13,13 @@ const getProducts = (query) => {
 		const sql = `select p.id, p.product_name, p.price, p.product_img, c."name" as "category_name"
 		from products p
 		join categories c on p.category_id = c.id
-		where p.product_name ilike '%${query.search || ""}%'
+		where p.product_name ilike $1
 		order by ${order || "id asc"}
-		limit ${query.limit || 5}`;
+		limit $2`;
 
-		db.query(sql, (error, result) => {
+		const values = [`%${query.search || ""}%`, `${query.limit || 5}`];
+
+		db.query(sql, values, (error, result) => {
 			if (error) {
 				reject(error);
 				return;
