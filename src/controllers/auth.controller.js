@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+
 const authModel = require("../models/auth.model");
 const { jwtSecret } = require("../configs/env");
 
@@ -11,15 +13,20 @@ const login = async (req, res) => {
 			return res.status(401).json({ msg: "Invalid Email or Password" });
 		}
 
-		jwt.sign(
-			result.rows[0],
-			jwtSecret,
-			{ expiresIn: "1d" },
-			(error, token) => {
-				if (error) throw error;
-				res.status(200).json({ msg: "Welcome", token });
-			}
-		);
+		const { id, password } = result.rows[0];
+		const isPwdValid = await bcrypt.compare(body.password, password);
+
+		if (!isPwdValid) {
+			return res.status(401).json({ msg: "Invalid Email or Password" });
+		}
+
+		const payload = { id };
+		const jwtOptions = { expiresIn: "1d" };
+
+		jwt.sign(payload, jwtSecret, jwtOptions, (error, token) => {
+			if (error) throw error;
+			res.status(200).json({ msg: "Welcome", token });
+		});
 	} catch (error) {
 		console.log(error);
 		res.status(500).json({ msg: "Internal Server Error" });
@@ -32,4 +39,25 @@ const privateAccess = (req, res) => {
 	res.status(200).json({ payload: { id, email }, msg: "OK" });
 };
 
-module.exports = { login, privateAccess };
+const editPassword = async (req, res) => {
+	const { authInfo, body } = req;
+	try {
+		const result = await authModel.getPassword(authInfo.id);
+		const pwdFromDb = result.rows[0].password;
+		const isPwdValid = await bcrypt.compare(body.oldPwd, pwdFromDb);
+		if (!isPwdValid) {
+			return res.status(403).json({ msg: "Wrong Old Password" });
+		}
+		const hashedPassword = await bcrypt.hash(body.newPwd, 10);
+		await authModel.editPassword(hashedPassword, authInfo.id);
+		//TODO: generate new token through disable old token
+		res.status(200).json({ msg: "Succesfully Edit Password" });
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({
+			msg: "Internal Server Error",
+		});
+	}
+};
+
+module.exports = { login, privateAccess, editPassword };
