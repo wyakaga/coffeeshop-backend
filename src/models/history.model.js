@@ -15,8 +15,8 @@ const getHistory = (query) => {
 		INNER JOIN history h ON h.id = hps.history_id
 		INNER JOIN products p ON p.id = hps.product_id
 		INNER JOIN deliveries d ON d.id = h.delivery_id
-    WHERE name ILIKE $1
-    ORDER BY ${order || "id ASC"}
+    WHERE p."name" ILIKE $1
+    ORDER BY ${order || "h.id ASC"}
     LIMIT $2`;
 
 		const values = [
@@ -48,7 +48,7 @@ const getHistoryDetail = (params) => {
 	});
 };
 
-const getInsertHistory = (client, historyId) => {
+const getModifiedHistory = (client, historyId) => {
 	return new Promise((resolve, reject) => {
 		const sql = `SELECT u.email, pf.address , p."name" AS "product", s."name" AS "size", pr.code AS "promo", py.method AS "payment_method",
 		st."name" AS "transaction_status", hps.qty, hps.subtotal
@@ -108,13 +108,9 @@ const insertDetailHistory = (client, data, historyId) => {
 
 const updateHistory = (params, data) => {
 	return new Promise((resolve, reject) => {
-		const sql = `UPDATE history SET product_name = $1, price = $2, product_img = $3,order_status = $4
-    WHERE id = $5 RETURNING *`;
+		const sql = `UPDATE history SET status_id = $1 WHERE id = $2 RETURNING *`;
 		const values = [
-			data.product_name,
-			data.price,
-			data.product_img,
-			data.order_status,
+			data.status_id,
 			params.historyId,
 		];
 		db.query(sql, values, (err, result) => {
@@ -124,13 +120,24 @@ const updateHistory = (params, data) => {
 	});
 };
 
-const deleteHistory = (params) => {
+const deleteHistory = (client, userId) => {
 	return new Promise((resolve, reject) => {
-		const sql = `DELETE FROM history WHERE id = $1 RETURNING *`;
-		const values = [params.historyId];
-		db.query(sql, values, (err, result) => {
+		const sql = `DELETE FROM history WHERE user_id = $1 RETURNING id`;
+		const values = [userId];
+		client.query(sql, values, (err, result) => {
 			if (err) return reject(err);
 			resolve(result);
+		});
+	});
+};
+
+const deleteDetailHistory = (client, historyId) => {
+	return new Promise((resolve, reject) => {
+		let sql = `DELETE FROM history_products_sizes WHERE history_id = $1`;
+		let values = [historyId];
+		client.query(sql, values, (err) => {
+			if (err) return reject(err);
+			resolve();
 		});
 	});
 };
@@ -138,9 +145,10 @@ const deleteHistory = (params) => {
 module.exports = {
 	getHistory,
 	getHistoryDetail,
-	getInsertHistory,
+	getModifiedHistory,
 	insertHistory,
 	insertDetailHistory,
 	updateHistory,
 	deleteHistory,
+	deleteDetailHistory
 };

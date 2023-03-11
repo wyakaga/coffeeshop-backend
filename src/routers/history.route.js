@@ -6,10 +6,10 @@ const historyController = require("../controllers/history.controller");
 
 const historyRouter = Router();
 
-historyRouter.get("/", historyController.getHistory);
-historyRouter.get("/:historyId", historyController.getHistoryDetail);
+historyRouter.get("/", checkToken, historyController.getHistory);
+historyRouter.get("/:historyId", checkToken, historyController.getHistoryDetail);
 historyRouter.post("/", checkToken, historyController.insertHistory);
-historyRouter.patch("/:historyId", historyController.updateHistory);
-historyRouter.delete("/:historyId", historyController.deleteHistory);
+historyRouter.patch("/:historyId", checkToken, historyController.updateHistory);
+historyRouter.delete("/", checkToken, historyController.deleteHistory);
 
 module.exports = historyRouter;

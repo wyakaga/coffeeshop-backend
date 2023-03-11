@@ -52,7 +52,7 @@ const insertHistory = async (req, res) => {
 		const historyId = result.rows[0].id;
 		await historyModel.insertDetailHistory(client, body, historyId);
 		await client.query('COMMIT');
-		const resultDetails = await historyModel.getInsertHistory(client, historyId);
+		const resultDetails = await historyModel.getModifiedHistory(client, historyId);
 		client.release();
 		res.status(200).json({
 			data: resultDetails.rows,
@@ -86,15 +86,24 @@ const updateHistory = async (req, res) => {
 };
 
 const deleteHistory = async (req, res) => {
+	const { authInfo } = req;
+	const client = await db.connect();
 	try {
-		const { params } = req;
-		const result = await historyModel.deleteHistory(params);
+		await client.query('BEGIN');
+		const result = await historyModel.deleteHistory(client, authInfo.id);
+		const historyId = result.rows[0].id;
+		await historyModel.deleteDetailHistory(client, historyId);
+		await client.query('COMMIT');
+		const resultDetails = await historyModel.getModifiedHistory(client, historyId);
+		client.release();
 		res.status(200).json({
-			data: result.rows,
-			msg: "Deleted Successfully"
+			data: resultDetails.rows,
+			msg: "Successfully Deleted",
 		});
 	} catch (error) {
 		console.log(error.message);
+		await client.query('ROLLBACK');
+		client.release();
 		res.status(500).json({
 			msg: "Internal Server Error",
 		});
