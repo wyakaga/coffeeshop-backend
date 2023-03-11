@@ -1,12 +1,14 @@
 const { Router } = require("express");
 
+const { checkToken } = require("../middlewares/auth");
+
 const historyController = require("../controllers/history.controller");
 
 const historyRouter = Router();
 
 historyRouter.get("/", historyController.getHistory);
 historyRouter.get("/:historyId", historyController.getHistoryDetail);
-historyRouter.post("/", historyController.insertHistory);
+historyRouter.post("/", checkToken, historyController.insertHistory);
 historyRouter.patch("/:historyId", historyController.updateHistory);
 historyRouter.delete("/:historyId", historyController.deleteHistory);
 

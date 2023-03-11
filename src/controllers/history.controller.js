@@ -1,4 +1,5 @@
 const historyModel = require("../models/history.model");
+const db = require("../configs/postgre");
 
 const getHistory = async (req, res) => {
 	try {
@@ -43,15 +44,24 @@ const getHistoryDetail = async (req, res) => {
 };
 
 const insertHistory = async (req, res) => {
+	const { authInfo, body } = req;
+	const client = await db.connect();
 	try {
-		const { body } = req;
-		const result = await historyModel.insertHistory(body);
-		res.status(201).json({
-			data: result.rows,
-			msg: "Created Successfully",
+		await client.query('BEGIN');
+		const result = await historyModel.insertHistory(client, body, authInfo.id);
+		const historyId = result.rows[0].id;
+		await historyModel.insertDetailHistory(client, body, historyId);
+		await client.query('COMMIT');
+		const resultDetails = await historyModel.getInsertHistory(client, historyId);
+		client.release();
+		res.status(200).json({
+			data: resultDetails.rows,
+			msg: "OK",
 		});
 	} catch (error) {
 		console.log(error.message);
+		await client.query('ROLLBACK');
+		client.release();
 		res.status(500).json({
 			msg: "Internal Server Error",
 		});
