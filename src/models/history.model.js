@@ -9,9 +9,13 @@ const getHistory = (query) => {
 		if (query.order === "priciest") {
 			order = "price DESC";
 		}
-
-		const sql = `SELECT * FROM history
-    WHERE product_name ILIKE $1
+		//TODO: should use agregation to get the price AKA don't use subtotal!
+		const sql = `SELECT p."name" AS "product_name", p."img" AS product_img, hps."subtotal" AS "price", d."method" AS "delivery_method"
+		FROM history_products_sizes hps
+		INNER JOIN history h ON h.id = hps.history_id
+		INNER JOIN products p ON p.id = hps.product_id
+		INNER JOIN deliveries d ON d.id = h.delivery_id
+    WHERE name ILIKE $1
     ORDER BY ${order || "id ASC"}
     LIMIT $2`;
 
@@ -28,8 +32,14 @@ const getHistory = (query) => {
 };
 
 const getHistoryDetail = (params) => {
+	//? Temporarily use profile id as params?
 	return new Promise((resolve, reject) => {
-		const sql = `SELECT * FROM history WHERE id = $1`;
+		const sql = `SELECT p."name" AS "product_name", p."img" AS product_img, hps."subtotal" AS "price", d."method" AS "delivery_method"
+		FROM history_products_sizes hps
+		INNER JOIN history h ON h.id = hps.history_id
+		INNER JOIN products p ON p.id = hps.product_id
+		INNER JOIN deliveries d ON d.id = h.delivery_id
+		WHERE p.id = $1`;
 		const values = [params.historyId];
 		db.query(sql, values, (err, result) => {
 			if (err) return reject(err);

@@ -10,14 +10,19 @@ const getProducts = (query) => {
 			order = "price DESC";
 		}
 
-		const sql = `select p.id, p.product_name, p.price, p.product_img, c."name" as "category_name"
+		const sql = `select p.id, p.name, p.price, p.img, c."name" as "category_name"
 		from products p
 		join categories c on p.category_id = c.id
-		where p.product_name ilike $1
+		where p.name ilike $1
 		order by ${order || "id asc"}
-		limit $2`;
+		limit $2
+		offset $3`;
 
-		const values = [`%${query.search || ""}%`, `${query.limit || 5}`];
+		const page = query.page || 1;
+		const limit = query.limit || 5;
+		const offset = (parseInt(page) - 1) * parseInt(limit);
+
+		const values = [`%${query.search || ""}%`, `${limit}`, offset];
 
 		db.query(sql, values, (error, result) => {
 			if (error) {
@@ -31,7 +36,7 @@ const getProducts = (query) => {
 
 const getProductDetail = (params) => {
 	return new Promise((resolve, reject) => {
-		const sql = `SELECT p.id, p.product_name, p.price, p.product_img, c."name" as "category_name"
+		const sql = `SELECT p.id, p.name, p.price, p.img, c."name" as "category_name"
 		FROM products p
 		JOIN categories c on p.category_id = c.id
 		WHERE p.id = $1`;
@@ -43,6 +48,26 @@ const getProductDetail = (params) => {
 				return;
 			}
 			resolve(result);
+		});
+	});
+};
+
+const getMetaProducts = (query) => {
+	return new Promise((resolve, reject) => {
+		const sql = "SELECT COUNT(*) AS total_data FROM products";
+		db.query(sql, (err, result) => {
+			if (err) return reject(err);
+			const totalData = parseInt(result.rows[0].total_data);
+			const page = query.page || 1;
+			const limit = query.limit || 5;
+			const totalPage = Math.ceil(totalData / parseInt(limit));
+
+			//* We know that this shouldn't be hardcoded but it works
+			let prev = parseInt(page) === 1 ? null : `localhost:8080/products?page=${parseInt(page) - 1}`;
+			let next = parseInt(page) === totalPage ? null : `localhost:8080/products?page=${parseInt(page) + 1}`;
+
+			const meta = { totalData, prev, next, totalPage };
+			resolve(meta);
 		});
 	});
 };
@@ -96,6 +121,7 @@ const deleteProduct = (params) => {
 module.exports = {
 	getProducts,
 	getProductDetail,
+	getMetaProducts,
 	insertProducts,
 	updateProduct,
 	deleteProduct,
