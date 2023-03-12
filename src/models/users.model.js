@@ -115,6 +115,17 @@ const updateUserData = (params, data) => {
 	});
 };
 
+const updateUserImage = (fileLink, params) => {
+	return new Promise((resolve, reject) => {
+		const sql = "UPDATE profiles SET img = $1 WHERE user_id = $2 RETURNING *";
+		const values = [fileLink, params.userId];
+		db.query(sql, values, (error, result) => {
+			if (error) return reject(error);
+			resolve(result);
+		});
+	});
+};
+
 const deleteUser = (client, userId) => {
 	return new Promise((resolve, reject) => {
 		const sql = "DELETE FROM users WHERE id = $1 RETURNING id";
@@ -144,6 +155,7 @@ module.exports = {
 	insertUsers,
 	insertDetailUsers,
 	updateUserData,
+	updateUserImage,
 	deleteUser,
 	deleteDetailUsers,
 };

@@ -85,6 +85,24 @@ const updateUserData = async (req, res) => {
 	}
 };
 
+const updateUserImage = async (req, res) => {
+	try {
+		const fileLink = `/img/${req.file.filename}`;
+		console.log(fileLink);
+		const { params } = req;
+		const result = await usersModel.updateUserImage(fileLink, params);
+		res.status(200).json({
+			data: result.rows,
+			msg: "Updated Successfully",
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({
+			msg: "Internal Server Error",
+		});
+	}
+};
+
 const deleteUser = async (req, res) => {
 	const { authInfo } = req;
 	const client = await db.connect();
@@ -115,5 +133,6 @@ module.exports = {
 	getUserDetail,
 	insertUsers,
 	updateUserData,
+	updateUserImage,
 	deleteUser,
 };
