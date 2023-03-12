@@ -44,13 +44,27 @@ const editPassword = async (req, res) => {
 		const result = await authModel.getPassword(authInfo.id);
 		const pwdFromDb = result.rows[0].password;
 		const isPwdValid = await bcrypt.compare(body.oldPwd, pwdFromDb);
+
 		if (!isPwdValid) {
 			return res.status(403).json({ msg: "Wrong Old Password" });
 		}
+		
 		const hashedPassword = await bcrypt.hash(body.newPwd, 10);
 		await authModel.editPassword(hashedPassword, authInfo.id);
-		//TODO: generate new token through disable old token
-		res.status(200).json({ msg: "Succesfully Edit Password" });
+
+		const createToken = () => {
+      const { id, role_id, img } = result.rows[0];
+      const payload = { id, role_id, img };
+      const jwtOptions = { expiresIn: "1d" };
+      return jwt.sign(payload, jwtSecret, jwtOptions);
+    };
+
+    const token = createToken();
+
+    res.status(200).json({
+      msg: "Successfully Edit Password",
+      token,
+    });
 	} catch (error) {
 		console.log(error);
 		res.status(500).json({

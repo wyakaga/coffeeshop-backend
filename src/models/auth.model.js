@@ -16,7 +16,10 @@ const userVerification = (body) => {
 
 const getPassword = (userId) => {
   return new Promise((resolve, reject) => {
-    const sql = "SELECT u.password FROM users u WHERE id = $1";
+    const sql = `SELECT u.id, u.password, u.role_id, p.img AS img
+    FROM users u
+    JOIN profiles p ON u.id = p.user_id
+    WHERE id = $1`;
     const values = [userId];
     db.query(sql, values, (err, result) => {
       if (err) return reject(err);
@@ -25,7 +28,7 @@ const getPassword = (userId) => {
   });
 };
 
-const editPassword = (userId, newPwd) => {
+const editPassword = (newPwd, userId) => {
   return new Promise((resolve, reject) => {
     const sql = "UPDATE users SET password = $1 WHERE id = $2";
     const values = [newPwd, userId];
