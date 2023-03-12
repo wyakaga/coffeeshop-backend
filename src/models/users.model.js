@@ -1,4 +1,5 @@
 const db = require("../configs/postgre");
+const bcrypt = require("bcrypt");
 
 const getUsers = (query) => {
 	return new Promise((resolve, reject) => {
@@ -10,12 +11,13 @@ const getUsers = (query) => {
 			order = "display_name desc";
 		}
 
-		const sql = `select u.id, u."email", u."phone_number", u."address", u."display_name",
-		u."first_name", u."last_name", u."birth_date", u."gender", r."name" as "role_name"
-		from users u join roles r on u.role_id = r.id
-		where u.email ilike $1
-		order by ${order || "id asc"}
-		limit $2`;
+		const sql = `SELECT u.email, u.phone_number, p.address, p.display_name, p.first_name, p.last_name, p.birth_date,
+		p.gender
+		FROM profiles p
+		JOIN users u on u.id = p.user_id
+		WHERE u.email ILIKE $1
+		ORDER BY ${order || "id asc"}
+		LIMIT $2`;
 
 		const values = [`%${query.search || ""}%`, `${query.limit || 3}`];
 
@@ -31,9 +33,10 @@ const getUsers = (query) => {
 
 const getUserDetail = (params) => {
 	return new Promise((resolve, reject) => {
-		const sql = `SELECT u.id, u."email", u."password", u."phone_number", u."address", u."display_name",
-		u."first_name", u."last_name", u."birth_date", u."gender", r."name" as "role_name"
-		FROM users u JOIN roles r ON u.role_id = r.id
+		const sql = `SELECT u.email, u.phone_number, p.address, p.display_name, p.first_name, p.last_name, p.birth_date,
+		p.gender
+		FROM profiles p
+		JOIN users u on u.id = p.user_id
 		WHERE u.id = $1`;
 		const values = [params.userId];
 
@@ -47,14 +50,47 @@ const getUserDetail = (params) => {
 	});
 };
 
-const insertUsers = (data) => {
+const getModifiedUser = (client, userId) => {
 	return new Promise((resolve, reject) => {
-		const sql =
-			"INSERT INTO users (email, password, phone_number, role_id) VALUES ($1, $2, $3, $4) RETURNING *";
-		const values = [data.email, data.password, data.phone_number, data.role_id];
-		db.query(sql, values, (error, result) => {
+		const sql = `SELECT u.email, u.phone_number, p.address, p.display_name, p.first_name, p.last_name, p.birth_date,
+		p.gender
+		FROM profiles p
+		JOIN users u on u.id = p.user_id
+		WHERE u.id = $1`;
+		const values = [userId];
+		client.query(sql, values, (error, result) => {
 			if (error) return reject(error);
 			resolve(result);
+		});
+	});
+};
+
+const insertUsers = (client, data) => {
+	return new Promise((resolve, reject) => {
+		bcrypt
+			.hash(data.password, 10)
+			.then((hash) => {
+				let hashedPassword = "";
+				hashedPassword = hash;
+				const sql =
+					"INSERT INTO users (email, password, phone_number, role_id) VALUES ($1, $2, $3, $4) RETURNING id";
+				const values = [data.email, hashedPassword, data.phone_number, data.role_id || 2];
+				client.query(sql, values, (error, result) => {
+					if (error) return reject(error);
+					resolve(result);
+				});
+			})
+			.catch((error) => reject(error));
+	});
+};
+
+const insertDetailUsers = (client, userId) => {
+	return new Promise((resolve, reject) => {
+		const sql = "INSERT INTO profiles (user_id) VALUES ($1)";
+		const values = [userId];
+		client.query(sql, values, (error) => {
+			if (error) return reject(error);
+			resolve();
 		});
 	});
 };
@@ -62,7 +98,7 @@ const insertUsers = (data) => {
 const updateUserData = (params, data) => {
 	return new Promise((resolve, reject) => {
 		const sql =
-			"UPDATE users SET address = $1, display_name = $2, first_name = $3, last_name = $4, birth_date = $5, gender = $6 WHERE id = $7 RETURNING *";
+			"UPDATE profiles SET address = $1, display_name = $2, first_name = $3, last_name = $4, birth_date = $5, gender = $6 WHERE user_id = $7 RETURNING *";
 		const values = [
 			data.address,
 			data.display_name,
@@ -79,13 +115,24 @@ const updateUserData = (params, data) => {
 	});
 };
 
-const deleteUser = (params) => {
+const deleteUser = (client, userId) => {
 	return new Promise((resolve, reject) => {
-		const sql = "DELETE FROM users WHERE id = $1 RETURNING *";
-		const values = [params.userId];
-		db.query(sql, values, (error, result) => {
+		const sql = "DELETE FROM users WHERE id = $1 RETURNING id";
+		const values = [userId];
+		client.query(sql, values, (error, result) => {
 			if (error) return reject(error);
 			resolve(result);
+		});
+	});
+};
+
+const deleteDetailUsers = (client, userId) => {
+	return new Promise((resolve, reject) => {
+		const sql = "DELETE FROM profiles WHERE user_id = $1";
+		const values = [userId];
+		client.query(sql, values, (error) => {
+			if (error) return reject(error);
+			resolve();
 		});
 	});
 };
@@ -93,7 +140,10 @@ const deleteUser = (params) => {
 module.exports = {
 	getUsers,
 	getUserDetail,
+	getModifiedUser,
 	insertUsers,
+	insertDetailUsers,
 	updateUserData,
 	deleteUser,
+	deleteDetailUsers,
 };

@@ -1,4 +1,5 @@
 const usersModel = require("../models/users.model");
+const db = require("../configs/postgre");
 
 const getUsers = async (req, res) => {
 	try {
@@ -43,15 +44,24 @@ const getUserDetail = async (req, res) => {
 };
 
 const insertUsers = async (req, res) => {
+	const { body } = req;
+	const client = await db.connect();
 	try {
-		const { body } = req;
-		const result = await usersModel.insertUsers(body);
-		res.status(201).json({
-			data: result.rows,
-			msg: "Created Successfully",
+		await client.query("BEGIN");
+		const result = await usersModel.insertUsers(client, body);
+		const userId = result.rows[0].id;
+		await usersModel.insertDetailUsers(client, userId);
+		await client.query("COMMIT");
+		const resultDetails = await usersModel.getModifiedUser(client, userId);
+		client.release();
+		res.status(200).json({
+			data: resultDetails.rows,
+			msg: "OK",
 		});
 	} catch (error) {
 		console.log(error.message);
+		await client.query("ROLLBACK");
+		client.release();
 		res.status(500).json({
 			msg: "Internal Server Error",
 		});
@@ -76,15 +86,24 @@ const updateUserData = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
+	const { authInfo } = req;
+	const client = await db.connect();
 	try {
-		const { params } = req;
-		const result = await usersModel.deleteUser(params);
+		await client.query("BEGIN");
+		const result = await usersModel.deleteUser(client, authInfo.id);
+		const userId = result.rows[0].id;
+		await usersModel.deleteDetailUsers(client, userId);
+		await client.query("COMMIT");
+		const resultDetails = await usersModel.getModifiedUser(client, userId);
+		client.release();
 		res.status(200).json({
-			data: result.rows,
-			msg: "Deleted Successfully",
+			data: resultDetails.rows,
+			msg: "Successfully Deleted",
 		});
 	} catch (error) {
 		console.log(error.message);
+		await client.query("ROLLBACK");
+		client.release();
 		res.status(500).json({
 			msg: "Internal Server Error",
 		});
