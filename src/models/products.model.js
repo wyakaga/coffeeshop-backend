@@ -64,7 +64,8 @@ const getMetaProducts = (query) => {
 
 			//* We know that this shouldn't be hardcoded but it works
 			let prev = parseInt(page) === 1 ? null : `localhost:8080/products?page=${parseInt(page) - 1}`;
-			let next = parseInt(page) === totalPage ? null : `localhost:8080/products?page=${parseInt(page) + 1}`;
+			let next =
+				parseInt(page) === totalPage ? null : `localhost:8080/products?page=${parseInt(page) + 1}`;
 
 			const meta = { totalData, prev, next, totalPage };
 			resolve(meta);
@@ -74,14 +75,8 @@ const getMetaProducts = (query) => {
 
 const insertProducts = (data) => {
 	return new Promise((resolve, reject) => {
-		const sql =
-			"insert into products (product_name, price, product_img, category_id) values ($1, $2, $3, $4) RETURNING *";
-		const values = [
-			data.product_name,
-			data.price,
-			data.product_img,
-			data.category_id,
-		];
+		const sql = "insert into products (name, price, category_id) values ($1, $2, $3) RETURNING *";
+		const values = [data.name, data.price, data.category_id];
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
 			resolve(result);
@@ -92,14 +87,19 @@ const insertProducts = (data) => {
 const updateProduct = (params, data) => {
 	return new Promise((resolve, reject) => {
 		const sql =
-			"UPDATE products SET name = $1, price = $2, img = $3, category_id = $4 WHERE id = $5 RETURNING *";
-		const values = [
-			data.product_name,
-			data.price,
-			data.product_img,
-			data.category_id,
-			params.productId,
-		];
+			"UPDATE products SET name = $1, price = $2, category_id = $3 WHERE id = $4 RETURNING *";
+		const values = [data.product_name, data.price, data.category_id, params.productId];
+		db.query(sql, values, (error, result) => {
+			if (error) return reject(error);
+			resolve(result);
+		});
+	});
+};
+
+const updateProductImage = (fileLink, params) => {
+	return new Promise((resolve, reject) => {
+		const sql = "UPDATE products SET img = $1 WHERE id = $2 RETURNING *";
+		const values = [fileLink, params.productId];
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
 			resolve(result);
@@ -124,5 +124,6 @@ module.exports = {
 	getMetaProducts,
 	insertProducts,
 	updateProduct,
+	updateProductImage,
 	deleteProduct,
 };

@@ -78,6 +78,24 @@ const updateProduct = async (req, res) => {
 	}
 };
 
+const updateProductImage = async (req, res) => {
+	try {
+		const fileLink = `/img/${req.file.filename}`;
+		console.log(fileLink);
+		const { params } = req;
+		const result = await productsModel.updateProductImage(fileLink, params);
+		res.status(200).json({
+			data: result.rows,
+			msg: "Updated Successfully",
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({
+			msg: "Internal Server Error",
+		});
+	}
+};
+
 const deleteProduct = async (req, res) => {
 	try {
 		const { params } = req;
@@ -99,5 +117,6 @@ module.exports = {
 	getProductDetail,
 	insertProducts,
 	updateProduct,
+	updateProductImage,
 	deleteProduct,
 };
