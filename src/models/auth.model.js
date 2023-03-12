@@ -26,7 +26,7 @@ const getPassword = (userId) => {
 const editPassword = (userId, newPwd) => {
   return new Promise((resolve, reject) => {
     const sql = "UPDATE users SET password = $1 WHERE id = $2";
-    const values = [userId, newPwd];
+    const values = [newPwd, userId];
     db.query(sql, values, (err, result) => {
       if(err) return reject(err);
       resolve(result);
