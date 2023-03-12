@@ -92,7 +92,7 @@ const insertProducts = (data) => {
 const updateProduct = (params, data) => {
 	return new Promise((resolve, reject) => {
 		const sql =
-			"UPDATE products SET product_name = $1, price = $2, product_img = $3, category_id = $4 WHERE id = $5 RETURNING *";
+			"UPDATE products SET name = $1, price = $2, img = $3, category_id = $4 WHERE id = $5 RETURNING *";
 		const values = [
 			data.product_name,
 			data.price,
