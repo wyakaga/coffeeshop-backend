@@ -13,14 +13,14 @@ const login = async (req, res) => {
 			return res.status(401).json({ msg: "Invalid Email or Password" });
 		}
 
-		const { id, password } = result.rows[0];
+		const { id, password, role_id, img } = result.rows[0];
 		const isPwdValid = await bcrypt.compare(body.password, password);
 
 		if (!isPwdValid) {
 			return res.status(401).json({ msg: "Invalid Email or Password" });
 		}
 
-		const payload = { id };
+		const payload = { id, role_id, img };
 		const jwtOptions = { expiresIn: "1d" };
 
 		jwt.sign(payload, jwtSecret, jwtOptions, (error, token) => {
@@ -34,9 +34,8 @@ const login = async (req, res) => {
 };
 
 const privateAccess = (req, res) => {
-	//TODO: don't forget to get the profile image
-	const { id, email } = req.authInfo;
-	res.status(200).json({ payload: { id, email }, msg: "OK" });
+	const { id, email, role_id, img } = req.authInfo;
+	res.status(200).json({ payload: { id, email, role_id, img }, msg: "OK" });
 };
 
 const editPassword = async (req, res) => {

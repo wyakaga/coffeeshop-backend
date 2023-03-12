@@ -2,8 +2,10 @@ const db = require('../configs/postgre');
 
 const userVerification = (body) => {
   return new Promise((resolve, reject) => {
-    //TODO use JOIN to get the profile image
-    const sql = "SELECT id, password FROM users WHERE email = $1";
+    const sql = `SELECT u.id, u.password, u.role_id, p.img AS img
+    FROM users u
+    JOIN profiles p ON u.id = p.user_id
+    WHERE email = $1`;
     const values = [body.email];
     db.query(sql, values, (err, result) => {
       if (err) return reject(err);
