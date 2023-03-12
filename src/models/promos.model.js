@@ -4,16 +4,15 @@ const getPromos = (query) => {
 	return new Promise((resolve, reject) => {
 		let order;
 		if (query.order === "recent") {
-			order = "promo_start DESC";
+			order = "start DESC";
 		}
 		if (query.order === "oldest") {
-			order = "promo_start ASC";
+			order = "start ASC";
 		}
 
-		const sql = `select id, product_img, product_name, concat(discount, '%') as discount,
-    promo_desc, promo_code, promo_start, promo_end
+		const sql = `select *
     from promos
-		where product_name ilike $1
+		where title ilike $1
 		order by ${order || "id asc"}
 		limit $2`;
 
@@ -28,8 +27,7 @@ const getPromos = (query) => {
 
 const getPromoDetail = (params) => {
 	return new Promise((resolve, reject) => {
-		const sql = `SELECT id, product_img, product_name, concat(discount, '%') as discount,
-		promo_desc, promo_code, promo_start, promo_end FROM promos WHERE id = $1`;
+		const sql = `SELECT * FROM promos WHERE id = $1`;
 		const values = [params.promoId];
 		db.query(sql, values, (err, result) => {
 			if (err) return reject(err);
@@ -40,16 +38,17 @@ const getPromoDetail = (params) => {
 
 const insertPromos = (data) => {
 	return new Promise((resolve, reject) => {
-		const sql = `INSERT INTO promos (product_img, product_name, discount, promo_desc, promo_code, promo_start, promo_end)
-		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`;
+		const sql = `INSERT INTO promos (img, title, desc, code, discount, start, end, product_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
 		const values = [
-			data.product_img,
-			data.product_name,
+			data.img,
+			data.title,
+			data.desc,
+			data.code,
 			data.discount,
-			data.promo_desc,
-			data.promo_code,
-			data.promo_start,
-			data.promo_end,
+			data.start,
+			data.end,
+			data.product_id,
 		];
 		db.query(sql, values, (err, result) => {
 			if (err) return reject(err);
@@ -61,16 +60,17 @@ const insertPromos = (data) => {
 const updatePromo = (params, data) => {
 	return new Promise((resolve, reject) => {
 		const sql = `UPDATE promos
-		SET product_img = $1, product_name = $2, discount = $3, promo_desc = $4, promo_code = $5, promo_start = $6, promo_end = $7
-		WHERE id = $8 RETURNING *`;
+		SET img = $1, title = $2, desc = $3, code = $4, discount = $5, start = $6, end = $7, product_id = $8
+		WHERE id = $9 RETURNING *`;
 		const values = [
-			data.product_img,
-			data.product_name,
+			data.img,
+			data.title,
+			data.desc,
+			data.code,
 			data.discount,
-			data.promo_desc,
-			data.promo_code,
-			data.promo_start,
-			data.promo_end,
+			data.start,
+			data.end,
+			data.product_id,
 			params.promoId,
 		];
 		db.query(sql, values, (err, result) => {
