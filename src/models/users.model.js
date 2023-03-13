@@ -95,10 +95,10 @@ const insertDetailUsers = (client, userId) => {
 	});
 };
 
-const updateUserData = (params, data) => {
+const updateUserData = (params, data, file) => {
 	return new Promise((resolve, reject) => {
 		const sql =
-			"UPDATE profiles SET address = $1, display_name = $2, first_name = $3, last_name = $4, birth_date = $5, gender = $6 WHERE user_id = $7 RETURNING *";
+			"UPDATE profiles SET address = $1, display_name = $2, first_name = $3, last_name = $4, birth_date = $5, gender = $6, img = $7 WHERE user_id = $8 RETURNING *";
 		const values = [
 			data.address,
 			data.display_name,
@@ -106,19 +106,9 @@ const updateUserData = (params, data) => {
 			data.last_name,
 			data.birth_date,
 			data.gender,
+			`/img/${file.filename}`,
 			params.userId,
 		];
-		db.query(sql, values, (error, result) => {
-			if (error) return reject(error);
-			resolve(result);
-		});
-	});
-};
-
-const updateUserImage = (fileLink, params) => {
-	return new Promise((resolve, reject) => {
-		const sql = "UPDATE profiles SET img = $1 WHERE user_id = $2 RETURNING *";
-		const values = [fileLink, params.userId];
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
 			resolve(result);
@@ -155,7 +145,6 @@ module.exports = {
 	insertUsers,
 	insertDetailUsers,
 	updateUserData,
-	updateUserImage,
 	deleteUser,
 	deleteDetailUsers,
 };

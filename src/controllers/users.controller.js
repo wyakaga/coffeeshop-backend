@@ -70,33 +70,15 @@ const insertUsers = async (req, res) => {
 
 const updateUserData = async (req, res) => {
 	try {
-		const { params } = req;
-		const { body } = req;
-		const result = await usersModel.updateUserData(params, body);
+		const { params, body, file } = req;
+		// const { body } = req;
+		const result = await usersModel.updateUserData(params, body, file);
 		res.status(200).json({
 			data: result.rows,
 			msg: "Updated Successfully",
 		});
 	} catch (error) {
 		console.log(error.message);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
-	}
-};
-
-const updateUserImage = async (req, res) => {
-	try {
-		const fileLink = `/img/${req.file.filename}`;
-		console.log(fileLink);
-		const { params } = req;
-		const result = await usersModel.updateUserImage(fileLink, params);
-		res.status(200).json({
-			data: result.rows,
-			msg: "Updated Successfully",
-		});
-	} catch (error) {
-		console.log(error);
 		res.status(500).json({
 			msg: "Internal Server Error",
 		});
@@ -133,6 +115,5 @@ module.exports = {
 	getUserDetail,
 	insertUsers,
 	updateUserData,
-	updateUserImage,
 	deleteUser,
 };
