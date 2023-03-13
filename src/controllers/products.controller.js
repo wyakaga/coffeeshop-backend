@@ -3,6 +3,7 @@ const productsModel = require("../models/products.model");
 const getProducts = async (req, res) => {
 	try {
 		const { query } = req;
+		const fullUrl = req.protocol + '://' + req.get('host');
 		const result = await productsModel.getProducts(query);
 
 		if (result.rows.length < 1) {
@@ -10,7 +11,7 @@ const getProducts = async (req, res) => {
 			return;
 		}
 
-		const meta = await productsModel.getMetaProducts(query);
+		const meta = await productsModel.getMetaProducts(query, fullUrl);
 
 		res.status(200).json({
 			data: result.rows,
@@ -47,8 +48,8 @@ const getProductDetail = async (req, res) => {
 
 const insertProducts = async (req, res) => {
 	try {
-		const { body } = req;
-		const result = await productsModel.insertProducts(body);
+		const { body, file } = req;
+		const result = await productsModel.insertProducts(body, file);
 		res.status(201).json({
 			data: result.rows,
 			msg: "Created Successfully",
@@ -63,33 +64,21 @@ const insertProducts = async (req, res) => {
 
 const updateProduct = async (req, res) => {
 	try {
-		const { params } = req;
-		const { body } = req;
-		const result = await productsModel.updateProduct(params, body);
+		// const fileLink = `/img/${req.file.filename}`;
+		const { params, body, file } = req;
+		let result;
+		//TODO: better use return, find the way
+		if (file === undefined) {
+			result = await productsModel.updateProduct(params, body);
+		} else {
+			result = await productsModel.updateProductWithFile(params, body, file);
+		}
 		res.status(200).json({
 			data: result.rows,
 			msg: "Updated Successfully",
 		});
 	} catch (error) {
 		console.log(error.message);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
-	}
-};
-
-const updateProductImage = async (req, res) => {
-	try {
-		const fileLink = `/img/${req.file.filename}`;
-		console.log(fileLink);
-		const { params } = req;
-		const result = await productsModel.updateProductImage(fileLink, params);
-		res.status(200).json({
-			data: result.rows,
-			msg: "Updated Successfully",
-		});
-	} catch (error) {
-		console.log(error);
 		res.status(500).json({
 			msg: "Internal Server Error",
 		});
@@ -117,6 +106,5 @@ module.exports = {
 	getProductDetail,
 	insertProducts,
 	updateProduct,
-	updateProductImage,
 	deleteProduct,
 };

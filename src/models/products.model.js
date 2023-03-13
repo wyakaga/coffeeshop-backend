@@ -52,7 +52,7 @@ const getProductDetail = (params) => {
 	});
 };
 
-const getMetaProducts = (query) => {
+const getMetaProducts = (query, fullUrl) => {
 	return new Promise((resolve, reject) => {
 		const sql = "SELECT COUNT(*) AS total_data FROM products";
 		db.query(sql, (err, result) => {
@@ -62,10 +62,9 @@ const getMetaProducts = (query) => {
 			const limit = query.limit || 5;
 			const totalPage = Math.ceil(totalData / parseInt(limit));
 
-			//* We know that this shouldn't be hardcoded but it works
-			let prev = parseInt(page) === 1 ? null : `localhost:8080/products?page=${parseInt(page) - 1}`;
+			let prev = parseInt(page) === 1 ? null : `${fullUrl}/products?page=${parseInt(page) - 1}`;
 			let next =
-				parseInt(page) === totalPage ? null : `localhost:8080/products?page=${parseInt(page) + 1}`;
+				parseInt(page) === totalPage ? null : `${fullUrl}/products?page=${parseInt(page) + 1}`;
 
 			const meta = { totalData, prev, next, totalPage };
 			resolve(meta);
@@ -73,10 +72,10 @@ const getMetaProducts = (query) => {
 	});
 };
 
-const insertProducts = (data) => {
+const insertProducts = (data, file) => {
 	return new Promise((resolve, reject) => {
-		const sql = "insert into products (name, price, category_id) values ($1, $2, $3) RETURNING *";
-		const values = [data.name, data.price, data.category_id];
+		const sql = "insert into products (name, price, img, category_id) values ($1, $2, $3, $4) RETURNING *";
+		const values = [data.name, data.price, `/img/${file.filename}`, data.category_id];
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
 			resolve(result);
@@ -86,9 +85,10 @@ const insertProducts = (data) => {
 
 const updateProduct = (params, data) => {
 	return new Promise((resolve, reject) => {
-		const sql =
+			const sql =
 			"UPDATE products SET name = $1, price = $2, category_id = $3 WHERE id = $4 RETURNING *";
-		const values = [data.product_name, data.price, data.category_id, params.productId];
+		const values = [data.name, data.price, data.category_id, params.productId];
+
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
 			resolve(result);
@@ -96,10 +96,12 @@ const updateProduct = (params, data) => {
 	});
 };
 
-const updateProductImage = (fileLink, params) => {
+const updateProductWithFile = (params, data, file) => {
 	return new Promise((resolve, reject) => {
-		const sql = "UPDATE products SET img = $1 WHERE id = $2 RETURNING *";
-		const values = [fileLink, params.productId];
+			const sql =
+			"UPDATE products SET name = $1, price = $2, img = $3, category_id = $4 WHERE id = $5 RETURNING *";
+		const values = [data.name, data.price, `/img/${file.filename}`,data.category_id, params.productId];
+
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
 			resolve(result);
@@ -124,6 +126,6 @@ module.exports = {
 	getMetaProducts,
 	insertProducts,
 	updateProduct,
-	updateProductImage,
+	updateProductWithFile,
 	deleteProduct,
 };

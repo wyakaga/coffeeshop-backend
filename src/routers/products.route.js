@@ -9,15 +9,8 @@ const productsRouter = Router();
 
 productsRouter.get("/", checkToken, productsController.getProducts);
 productsRouter.get("/:productId", checkToken, productsController.getProductDetail);
-productsRouter.post("/", checkRole, checkToken, productsController.insertProducts);
-productsRouter.patch("/:productId", checkRole, checkToken, productsController.updateProduct);
-productsRouter.patch(
-	"/img/:productId",
-	checkRole,
-	checkToken,
-	singleUpload("img"),
-	productsController.updateProductImage
-);
+productsRouter.post("/", checkRole, checkToken, singleUpload("img"), productsController.insertProducts);
+productsRouter.patch("/:productId", checkRole, checkToken, singleUpload("img"), productsController.updateProduct);
 productsRouter.delete("/:productId", checkRole, checkToken, productsController.deleteProduct);
 
 module.exports = productsRouter;
