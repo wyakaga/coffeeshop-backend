@@ -48,23 +48,23 @@ const editPassword = async (req, res) => {
 		if (!isPwdValid) {
 			return res.status(403).json({ msg: "Wrong Old Password" });
 		}
-		
+
 		const hashedPassword = await bcrypt.hash(body.newPwd, 10);
 		await authModel.editPassword(hashedPassword, authInfo.id);
 
 		const createToken = () => {
-      const { id, role_id, img } = result.rows[0];
-      const payload = { id, role_id, img };
-      const jwtOptions = { expiresIn: "1d" };
-      return jwt.sign(payload, jwtSecret, jwtOptions);
-    };
+			const { id, role_id, img } = result.rows[0];
+			const payload = { id, role_id, img };
+			const jwtOptions = { expiresIn: "1d" };
+			return jwt.sign(payload, jwtSecret, jwtOptions);
+		};
 
-    const token = createToken();
+		const token = createToken();
 
-    res.status(200).json({
-      msg: "Successfully Edit Password",
-      token,
-    });
+		res.status(200).json({
+			msg: "Successfully Edit Password",
+			token,
+		});
 	} catch (error) {
 		console.log(error);
 		res.status(500).json({
@@ -73,4 +73,58 @@ const editPassword = async (req, res) => {
 	}
 };
 
-module.exports = { login, privateAccess, editPassword };
+const createOTP = async (req, res) => {
+	try {
+		const { email } = req.body;
+
+		const generateOTP = () => {
+			const digits = "0123456789";
+			let OTP = "";
+			for (let i = 0; i < 6; i++) {
+				OTP += digits[Math.floor(Math.random() * 10)];
+			}
+			return OTP;
+		};
+
+		const otp = generateOTP();
+		const result = await authModel.createOTP(otp, email);
+
+		if (result.rows[0] < 1) {
+			res.status(404).json({ msg: "No Such Email" });
+		}
+
+		res.status(200).json({
+			otp: result.rows[0].otp,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({
+			msg: "Internal Server Error",
+		});
+	}
+};
+
+const forgotPwd = async (req, res) => {
+	try {
+		const { email, otp, password } = req.body;
+		const otpFromDb = await authModel.getOTP(email);
+
+		if (otpFromDb.rows[0].otp !== otp) {
+			res.status(403).json({ msg: "Invalid OTP" });
+		}
+
+		const hashedPwd = await bcrypt.hash(password, 10);
+		await authModel.forgotPwd(email, hashedPwd);
+		await authModel.deleteOTP(email);
+		res.status(200).json({
+			msg: "Successfully Changed Password",
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({
+			msg: "Internal Server Error",
+		});
+	}
+};
+
+module.exports = { login, privateAccess, editPassword, createOTP, forgotPwd };
