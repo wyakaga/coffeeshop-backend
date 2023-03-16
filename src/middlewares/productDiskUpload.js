@@ -17,7 +17,7 @@ const limits = 2e6;
 const fileFilter = (req, file, cb) => {
 	const pattern = /png|jpg|jpeg|webp/i;
 	const ext = path.extname(file.originalname);
-	if (!pattern.test(ext)) return cb(null, false);
+	if (!pattern.test(ext)) return cb(new Error("Extension should be in png, jpg, jpeg or webp"), false);
 	cb(null, true);
 };
 

@@ -52,10 +52,8 @@ const insertUsers = async (req, res) => {
 		const userId = result.rows[0].id;
 		await usersModel.insertDetailUsers(client, userId);
 		await client.query("COMMIT");
-		const resultDetails = await usersModel.getModifiedUser(client, userId);
 		client.release();
 		res.status(200).json({
-			data: resultDetails.rows,
 			msg: "OK",
 		});
 	} catch (error) {

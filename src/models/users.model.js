@@ -50,15 +50,14 @@ const getUserDetail = (params) => {
 	});
 };
 
-const getModifiedUser = (client, userId) => {
+const getModifiedUser = (userId) => {
 	return new Promise((resolve, reject) => {
-		const sql = `SELECT u.email, u.phone_number, p.address, p.display_name, p.first_name, p.last_name, p.birth_date,
-		p.gender
+		const sql = `SELECT u.role_id, p.display_name, p.img
 		FROM profiles p
-		JOIN users u on u.id = p.user_id
+		INNER JOIN users u on u.id = user_id
 		WHERE u.id = $1`;
 		const values = [userId];
-		client.query(sql, values, (error, result) => {
+		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
 			resolve(result);
 		});

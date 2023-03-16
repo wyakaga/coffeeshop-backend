@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 const authModel = require("../models/auth.model");
+const usersModel = require("../models/users.model");
 const { jwtSecret } = require("../configs/env");
 
 const login = async (req, res) => {
@@ -23,9 +24,16 @@ const login = async (req, res) => {
 		const payload = { id, role_id, img };
 		const jwtOptions = { expiresIn: "1d" };
 
+		const userId = id;
+		const resultDetails = await usersModel.getModifiedUser(userId);
+
 		jwt.sign(payload, jwtSecret, jwtOptions, (error, token) => {
 			if (error) throw error;
-			res.status(200).json({ msg: "Welcome", token });
+			res.status(200).json({
+				msg: "Welcome",
+				token: token,
+				data: resultDetails.rows[0],
+			});
 		});
 	} catch (error) {
 		console.log(error);
@@ -91,10 +99,12 @@ const createOTP = async (req, res) => {
 
 		if (result.rows[0] < 1) {
 			res.status(404).json({ msg: "No Such Email" });
+			return;
 		}
 
+		console.log(otp);
 		res.status(200).json({
-			otp: result.rows[0].otp,
+			msg: "Succesfully sent"
 		});
 	} catch (error) {
 		console.log(error);
@@ -111,6 +121,7 @@ const forgotPwd = async (req, res) => {
 
 		if (otpFromDb.rows[0].otp !== otp) {
 			res.status(403).json({ msg: "Invalid OTP" });
+			return;
 		}
 
 		const hashedPwd = await bcrypt.hash(password, 10);

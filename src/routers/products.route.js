@@ -7,8 +7,8 @@ const { singleUpload } = require("../middlewares/productDiskUpload");
 
 const productsRouter = Router();
 
-productsRouter.get("/", checkToken, productsController.getProducts);
-productsRouter.get("/:productId", checkToken, productsController.getProductDetail);
+productsRouter.get("/", productsController.getProducts);
+productsRouter.get("/:productId", productsController.getProductDetail);
 productsRouter.post("/", checkRole, checkToken, singleUpload("img"), productsController.insertProducts);
 productsRouter.patch("/:productId", checkRole, checkToken, singleUpload("img"), productsController.updateProduct);
 productsRouter.delete("/:productId", checkRole, checkToken, productsController.deleteProduct);
