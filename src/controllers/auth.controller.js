@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const authModel = require("../models/auth.model");
 const usersModel = require("../models/users.model");
 const { jwtSecret } = require("../configs/env");
+const { error } = require("../utils/response");
 
 const login = async (req, res) => {
 	try {
@@ -11,14 +12,14 @@ const login = async (req, res) => {
 		const result = await authModel.userVerification(body);
 
 		if (result.rows.length < 1) {
-			return res.status(401).json({ msg: "Invalid Email or Password" });
+			return error(res, { status: 401, message: "Invalid Email or Password" });
 		}
 
 		const { id, password, role_id, img } = result.rows[0];
 		const isPwdValid = await bcrypt.compare(body.password, password);
 
 		if (!isPwdValid) {
-			return res.status(401).json({ msg: "Invalid Email or Password" });
+			return error(res, { status:401, message: "Invalid Email or Password" });
 		}
 
 		const payload = { id, role_id, img };
@@ -30,20 +31,20 @@ const login = async (req, res) => {
 		jwt.sign(payload, jwtSecret, jwtOptions, (error, token) => {
 			if (error) throw error;
 			res.status(200).json({
-				msg: "Welcome",
+				message: "Welcome",
 				token: token,
 				data: resultDetails.rows[0],
 			});
 		});
-	} catch (error) {
-		console.log(error);
-		res.status(500).json({ msg: "Internal Server Error" });
+	} catch (err) {
+		console.log(err);
+		return error(res, { status:500, message: "Internal Server Error" });
 	}
 };
 
 const privateAccess = (req, res) => {
 	const { id, email, role_id, img } = req.authInfo;
-	res.status(200).json({ payload: { id, email, role_id, img }, msg: "OK" });
+	res.status(200).json({ payload: { id, email, role_id, img }, message: "OK" });
 };
 
 const editPassword = async (req, res) => {
@@ -54,7 +55,7 @@ const editPassword = async (req, res) => {
 		const isPwdValid = await bcrypt.compare(body.oldPwd, pwdFromDb);
 
 		if (!isPwdValid) {
-			return res.status(403).json({ msg: "Wrong Old Password" });
+			return error(res, { status:403, message: "Wrong Old Password" });
 		}
 
 		const hashedPassword = await bcrypt.hash(body.newPwd, 10);
@@ -70,14 +71,12 @@ const editPassword = async (req, res) => {
 		const token = createToken();
 
 		res.status(200).json({
-			msg: "Successfully Edit Password",
+			message: "Successfully Edit Password",
 			token,
 		});
-	} catch (error) {
-		console.log(error);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+	} catch (err) {
+		console.log(err);
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 
@@ -97,20 +96,17 @@ const createOTP = async (req, res) => {
 		const otp = generateOTP();
 		const result = await authModel.createOTP(otp, email);
 
-		if (result.rows[0] < 1) {
-			res.status(404).json({ msg: "No Such Email" });
-			return;
+		if (result.rows < 1) {
+			return error(res, { status: 404, message: "No Such Email" });
 		}
 
 		console.log(otp);
 		res.status(200).json({
-			msg: "Succesfully sent"
+			message: "Succesfully sent"
 		});
-	} catch (error) {
-		console.log(error);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+	} catch (err) {
+		console.log(err);
+		return error(res, { status:500, message: "Internal Server Error" });
 	}
 };
 
@@ -120,21 +116,18 @@ const forgotPwd = async (req, res) => {
 		const otpFromDb = await authModel.getOTP(email);
 
 		if (otpFromDb.rows[0].otp !== otp) {
-			res.status(403).json({ msg: "Invalid OTP" });
-			return;
+			return error(res, { status: 403, message: "Invalid OTP" });
 		}
 
 		const hashedPwd = await bcrypt.hash(password, 10);
 		await authModel.forgotPwd(email, hashedPwd);
 		await authModel.deleteOTP(email);
 		res.status(200).json({
-			msg: "Successfully Changed Password",
+			message: "Successfully Changed Password",
 		});
-	} catch (error) {
-		console.log(error);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+	} catch (err) {
+		console.log(err);
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 

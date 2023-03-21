@@ -1,5 +1,7 @@
 const usersModel = require("../models/users.model");
+const authModel = require("../models/auth.model");
 const db = require("../configs/postgre");
+const { error } = require("../utils/response");
 
 const getUsers = async (req, res) => {
 	try {
@@ -7,18 +9,15 @@ const getUsers = async (req, res) => {
 		const result = await usersModel.getUsers(query);
 
 		if (result.rows.length < 1) {
-			res.status(404).jsonp({ msg: "Data Not Found" });
-			return;
+			return error(res, { status: 404, message: "Data Not Found" });
 		}
 
 		res.status(200).json({
 			data: result.rows,
 		});
-	} catch (error) {
-		console.log(error.message);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+	} catch (err) {
+		console.log(err.message);
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 
@@ -28,18 +27,15 @@ const getUserDetail = async (req, res) => {
 		const result = await usersModel.getUserDetail(params);
 
 		if (result.rows.length < 1) {
-			res.status(404).json({ msg: "Data Not Found" });
-			return;
+			return error(res, { status: 404, message: "Data Not Found" });
 		}
 
 		res.status(200).json({
 			data: result.rows,
 		});
-	} catch (error) {
-		console.log(error.message);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+	} catch (err) {
+		console.log(err.message);
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 
@@ -47,6 +43,11 @@ const insertUsers = async (req, res) => {
 	const { body } = req;
 	const client = await db.connect();
 	try {
+		const verificationResult = await authModel.userVerification(body);
+		if (verificationResult.rows.length > 0) {
+			return error(res, { status: 400, message: "Email has been registered" });
+		}
+
 		await client.query("BEGIN");
 		const result = await usersModel.insertUsers(client, body);
 		const userId = result.rows[0].id;
@@ -54,32 +55,27 @@ const insertUsers = async (req, res) => {
 		await client.query("COMMIT");
 		client.release();
 		res.status(200).json({
-			msg: "OK",
+			message: "OK",
 		});
-	} catch (error) {
-		console.log(error.message);
+	} catch (err) {
+		console.log(err.message);
 		await client.query("ROLLBACK");
 		client.release();
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 
 const updateUserData = async (req, res) => {
 	try {
 		const { params, body, file } = req;
-		// const { body } = req;
 		const result = await usersModel.updateUserData(params, body, file);
 		res.status(200).json({
 			data: result.rows,
-			msg: "Updated Successfully",
+			message: "Updated Successfully",
 		});
-	} catch (error) {
-		console.log(error.message);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+	} catch (err) {
+		console.log(err.message);
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 
@@ -96,15 +92,13 @@ const deleteUser = async (req, res) => {
 		client.release();
 		res.status(200).json({
 			data: resultDetails.rows,
-			msg: "Successfully Deleted",
+			message: "Successfully Deleted",
 		});
-	} catch (error) {
-		console.log(error.message);
+	} catch (err) {
+		console.log(err.message);
 		await client.query("ROLLBACK");
 		client.release();
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 

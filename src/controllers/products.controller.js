@@ -1,4 +1,5 @@
 const productsModel = require("../models/products.model");
+const { error } = require("../utils/response");
 
 const getProducts = async (req, res) => {
 	try {
@@ -7,8 +8,7 @@ const getProducts = async (req, res) => {
 		const result = await productsModel.getProducts(query);
 
 		if (result.rows.length < 1) {
-			res.status(404).json({ msg: "Data Not Found" });
-			return;
+			return error(res, { status: 404, message: "Data Not Found" });
 		}
 
 		const meta = await productsModel.getMetaProducts(query, fullUrl);
@@ -19,9 +19,7 @@ const getProducts = async (req, res) => {
 		});
 	} catch (err) {
 		console.log(err.message);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 
@@ -31,8 +29,7 @@ const getProductDetail = async (req, res) => {
 		const result = await productsModel.getProductDetail(params);
 
 		if (result.rows.length < 1) {
-			res.status(404).json({ msg: "Data Not Found" });
-			return;
+			return error(res, { status: 404, message: "Data Not Found" });
 		}
 
 		res.status(200).json({
@@ -40,9 +37,7 @@ const getProductDetail = async (req, res) => {
 		});
 	} catch (err) {
 		console.log(err.message);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 
@@ -52,19 +47,16 @@ const insertProducts = async (req, res) => {
 		const result = await productsModel.insertProducts(body, file);
 		res.status(201).json({
 			data: result.rows,
-			msg: "Created Successfully",
+			message: "Created Successfully",
 		});
-	} catch (error) {
-		console.log(error.message);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+	} catch (err) {
+		console.log(err.message);
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 
 const updateProduct = async (req, res) => {
 	try {
-		// const fileLink = `/img/${req.file.filename}`;
 		const { params, body, file } = req;
 		let result;
 		//TODO: better use return, find the way
@@ -75,13 +67,11 @@ const updateProduct = async (req, res) => {
 		}
 		res.status(200).json({
 			data: result.rows,
-			msg: "Updated Successfully",
+			message: "Updated Successfully",
 		});
-	} catch (error) {
-		console.log(error.message);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+	} catch (err) {
+		console.log(err.message);
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 
@@ -91,13 +81,11 @@ const deleteProduct = async (req, res) => {
 		const result = await productsModel.deleteProduct(params);
 		res.status(200).json({
 			data: result.rows,
-			msg: "Deleted Successfully",
+			message: "Deleted Successfully",
 		});
-	} catch (error) {
-		console.log(error.message);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+	} catch (err) {
+		console.log(err.message);
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 

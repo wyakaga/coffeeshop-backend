@@ -1,5 +1,6 @@
 const historyModel = require("../models/history.model");
 const db = require("../configs/postgre");
+const { error } = require("../utils/response");
 
 const getHistory = async (req, res) => {
 	try {
@@ -7,18 +8,15 @@ const getHistory = async (req, res) => {
 		const result = await historyModel.getHistory(query);
 
 		if (result.rows.length < 1) {
-			res.status(404).json({ msg: "Data Not Found" });
-			return;
+			return error(res, { status: 404, message: "Data Not Found" });
 		}
 
 		res.status(200).json({
 			data: result.rows,
 		});
-	} catch (error) {
-		console.log(error.message);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+	} catch (err) {
+		console.log(err.message);
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 
@@ -28,18 +26,15 @@ const getHistoryDetail = async (req, res) => {
 		const result = await historyModel.getHistoryDetail(params);
 
 		if (result.rows.length < 1) {
-			res.status(404).json({ msg: "Data Not Found" });
-			return;
+			return error(res, { status: 404, message: "Data Not Found" });
 		}
 
 		res.status(200).json({
 			data: result.rows,
 		});
-	} catch (error) {
-		console.log(error.message);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+	} catch (err) {
+		console.log(err.message);
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 
@@ -56,15 +51,13 @@ const insertHistory = async (req, res) => {
 		client.release();
 		res.status(200).json({
 			data: resultDetails.rows,
-			msg: "OK",
+			message: "OK",
 		});
-	} catch (error) {
-		console.log(error.message);
+	} catch (err) {
+		console.log(err.message);
 		await client.query('ROLLBACK');
 		client.release();
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 
@@ -75,13 +68,11 @@ const updateHistory = async (req, res) => {
 		const result = await historyModel.updateHistory(params, body);
 		res.status(200).json({
 			data: result.rows,
-			msg: "Updated Successfully",
+			message: "Updated Successfully",
 		});
-	} catch (error) {
-		console.log(error.message);
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+	} catch (err) {
+		console.log(err.message);
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 
@@ -98,15 +89,13 @@ const deleteHistory = async (req, res) => {
 		client.release();
 		res.status(200).json({
 			data: resultDetails.rows,
-			msg: "Successfully Deleted",
+			message: "Successfully Deleted",
 		});
-	} catch (error) {
-		console.log(error.message);
+	} catch (err) {
+		console.log(err.message);
 		await client.query('ROLLBACK');
 		client.release();
-		res.status(500).json({
-			msg: "Internal Server Error",
-		});
+		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 
