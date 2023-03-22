@@ -72,10 +72,20 @@ const getMetaProducts = (query, fullUrl) => {
 	});
 };
 
-const insertProducts = (data, file) => {
+const nextIdValue = () => {
+	return new Promise((resolve, reject) => {
+		const sql = "SELECT LAST_VALUE + 1 AS next_value FROM products_id_seq";
+		db.query(sql, (error, result) => {
+			if (error) return reject(error);
+			resolve(result);
+		});
+	});
+};
+
+const insertProducts = (data, fileLink) => {
 	return new Promise((resolve, reject) => {
 		const sql = "insert into products (name, price, img, category_id) values ($1, $2, $3, $4) RETURNING *";
-		const values = [data.name, data.price, `/img/${file.filename}`, data.category_id];
+		const values = [data.name, data.price, fileLink, data.category_id];
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
 			resolve(result);
@@ -96,11 +106,11 @@ const updateProduct = (params, data) => {
 	});
 };
 
-const updateProductWithFile = (params, data, file) => {
+const updateProductWithFile = (params, data, fileLink) => {
 	return new Promise((resolve, reject) => {
 			const sql =
 			"UPDATE products SET name = $1, price = $2, img = $3, category_id = $4 WHERE id = $5 RETURNING *";
-		const values = [data.name, data.price, `/img/${file.filename}`,data.category_id, params.productId];
+		const values = [data.name, data.price, fileLink, data.category_id, params.productId];
 
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
@@ -124,6 +134,7 @@ module.exports = {
 	getProducts,
 	getProductDetail,
 	getMetaProducts,
+	nextIdValue,
 	insertProducts,
 	updateProduct,
 	updateProductWithFile,

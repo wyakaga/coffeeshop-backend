@@ -1,5 +1,6 @@
 const productsModel = require("../models/products.model");
 const { error } = require("../utils/response");
+const { uploader } = require("../utils/cloudinary");
 
 const getProducts = async (req, res) => {
 	try {
@@ -44,9 +45,18 @@ const getProductDetail = async (req, res) => {
 const insertProducts = async (req, res) => {
 	try {
 		const { body, file } = req;
-		const result = await productsModel.insertProducts(body, file);
+
+		const valueResult = await productsModel.nextIdValue();
+		const nextValue = valueResult.rows[0].next_value;
+		const { data, err, msg } = await uploader(req, "products", nextValue);
+		if (err) throw { msg, err };
+
+		if (!file) return error(res, { status:400, message: "Image Is Required" });
+		const fileLink = data.secure_url;
+		const result = await productsModel.insertProducts(body, fileLink);
+
 		res.status(201).json({
-			data: result.rows,
+			data: result.rows[0],
 			message: "Created Successfully",
 		});
 	} catch (err) {
@@ -58,20 +68,25 @@ const insertProducts = async (req, res) => {
 const updateProduct = async (req, res) => {
 	try {
 		const { params, body, file } = req;
+
+		const { data, err, msg } = await uploader(req, "products", params.productId);
+		if (err) throw { msg, err };
+
 		let result;
 		//TODO: better use return, find the way
-		if (file === undefined) {
+		if (!file) {
 			result = await productsModel.updateProduct(params, body);
 		} else {
-			result = await productsModel.updateProductWithFile(params, body, file);
+			const fileLink = data.secure_url;
+			result = await productsModel.updateProductWithFile(params, body, fileLink);
 		}
 		res.status(200).json({
-			data: result.rows,
+			data: result.rows[0],
 			message: "Updated Successfully",
 		});
-	} catch (err) {
-		console.log(err.message);
-		return error(res, { status: 500, message: "Internal Server Error" });
+	} catch (errors) {
+		console.log(errors.message);
+		error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
 

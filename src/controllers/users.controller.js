@@ -2,6 +2,7 @@ const usersModel = require("../models/users.model");
 const authModel = require("../models/auth.model");
 const db = require("../configs/postgre");
 const { error } = require("../utils/response");
+const { uploader } = require("../utils/cloudinary");
 
 const getUsers = async (req, res) => {
 	try {
@@ -68,7 +69,14 @@ const insertUsers = async (req, res) => {
 const updateUserData = async (req, res) => {
 	try {
 		const { params, body, file } = req;
-		const result = await usersModel.updateUserData(params, body, file);
+
+		const { data, err, msg } = await uploader(req, "users", params.userId);
+		if (err) throw { msg, err };
+
+		if (!file) return error(res, { status: 400, message: "Image Is Required" });
+		const fileLink = data.secure_url;
+		const result = await usersModel.updateUserData(params, body, fileLink);
+
 		res.status(200).json({
 			data: result.rows,
 			message: "Updated Successfully",

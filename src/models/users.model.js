@@ -94,7 +94,7 @@ const insertDetailUsers = (client, userId) => {
 	});
 };
 
-const updateUserData = (params, data, file) => {
+const updateUserData = (params, data, fileLink) => {
 	return new Promise((resolve, reject) => {
 		const sql =
 			"UPDATE profiles SET address = $1, display_name = $2, first_name = $3, last_name = $4, birth_date = $5, gender = $6, img = $7 WHERE user_id = $8 RETURNING *";
@@ -105,7 +105,7 @@ const updateUserData = (params, data, file) => {
 			data.last_name,
 			data.birth_date,
 			data.gender,
-			`/img/${file.filename}`,
+			fileLink,
 			params.userId,
 		];
 		db.query(sql, values, (error, result) => {
