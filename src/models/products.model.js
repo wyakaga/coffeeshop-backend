@@ -13,16 +13,16 @@ const getProducts = (query) => {
 		const sql = `select p.id, p.name, p.price, p.img, c."name" as "category_name"
 		from products p
 		join categories c on p.category_id = c.id
-		where p.name ilike $1
+		${query.category === undefined ? `where p.name ilike $1 or c."name" ilike $2` : `where p.name ilike $1 and c."name" ilike $2`}
 		order by ${order || "id asc"}
-		limit $2
-		offset $3`;
+		limit $3
+		offset $4`;
 
 		const page = query.page || 1;
-		const limit = query.limit || 5;
+		const limit = query.limit || 25;
 		const offset = (parseInt(page) - 1) * parseInt(limit);
 
-		const values = [`%${query.search || ""}%`, `${limit}`, offset];
+		const values = [`%${query.search || ""}%`, `${query.category}%`, `${limit}`, offset];
 
 		db.query(sql, values, (error, result) => {
 			if (error) {
@@ -59,7 +59,7 @@ const getMetaProducts = (query, fullUrl) => {
 			if (err) return reject(err);
 			const totalData = parseInt(result.rows[0].total_data);
 			const page = query.page || 1;
-			const limit = query.limit || 5;
+			const limit = query.limit || 25;
 			const totalPage = Math.ceil(totalData / parseInt(limit));
 
 			let prev = parseInt(page) === 1 ? null : `${fullUrl}/products?page=${parseInt(page) - 1}`;
