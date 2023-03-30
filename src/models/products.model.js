@@ -36,7 +36,7 @@ const getProducts = (query) => {
 
 const getProductDetail = (params) => {
 	return new Promise((resolve, reject) => {
-		const sql = `SELECT p.id, p.name, p.price, p.img, c."name" as "category_name"
+		const sql = `SELECT p.id, p.name, p.price, p.img, p.description , c."name" as "category_name"
 		FROM products p
 		JOIN categories c on p.category_id = c.id
 		WHERE p.id = $1`;
