@@ -11,5 +11,6 @@ authRouter.patch("/", authMiddleware.checkToken, authController.editPassword);
 authRouter.get("/private", checkRole, authMiddleware.checkToken, authController.privateAccess);
 authRouter.patch("/otp", authController.createOTP);
 authRouter.patch("/forgot", authController.forgotPwd);
+authRouter.patch("/logout", authMiddleware.checkToken, authController.logOut);
 
 module.exports = authRouter;

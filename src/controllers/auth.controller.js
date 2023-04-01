@@ -28,8 +28,9 @@ const login = async (req, res) => {
 		const userId = id;
 		const resultDetails = await usersModel.getModifiedUser(userId);
 
-		jwt.sign(payload, jwtSecret, jwtOptions, (error, token) => {
+		jwt.sign(payload, jwtSecret, jwtOptions, async (error, token) => {
 			if (error) throw error;
+			await authModel.createToken(token, body);
 			res.status(200).json({
 				message: "Welcome",
 				token: token,
@@ -57,6 +58,8 @@ const editPassword = async (req, res) => {
 		if (!isPwdValid) {
 			return error(res, { status:403, message: "Wrong Old Password" });
 		}
+
+		await authModel.deleteToken(body);
 
 		const hashedPassword = await bcrypt.hash(body.newPwd, 10);
 		await authModel.editPassword(hashedPassword, authInfo.id);
@@ -131,4 +134,16 @@ const forgotPwd = async (req, res) => {
 	}
 };
 
-module.exports = { login, privateAccess, editPassword, createOTP, forgotPwd };
+const logOut = async (req, res) => {
+	try {
+		const { authInfo } = req;
+		const oldToken = await authModel.getToken(authInfo.id);
+		await authModel.createBlackList(oldToken.rows[0].token, authInfo.id);
+		res.status(200).json({ message: "Successfully Log Out" });
+	} catch (err) {
+		console.log(err);
+		error(res, { status: 500, message: "Internal Server Error" });
+	}
+};
+
+module.exports = { login, privateAccess, editPassword, createOTP, forgotPwd, logOut };

@@ -72,6 +72,61 @@ const deleteOTP = (email) => {
   });
 };
 
+const createToken = (token, body) => {
+	return new Promise((resolve, reject) =>{
+		const sql = "UPDATE users SET token = $1 WHERE email = $2";
+		const values = [token, body.email];
+		db.query(sql, values, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
+const getToken = (userId) => {
+	return new Promise((resolve, reject) => {
+		const sql = "SELECT token FROM users WHERE id = $1";
+		const values = [userId];
+		db.query(sql, values, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
+const deleteToken = (body) => {
+	return new Promise((resolve, reject) => {
+		const sql = "UPDATE users SET token = null WHERE email = $1";
+		const values = [body.email];
+		db.query(sql, values, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
+const createBlackList = (token, userId) => {
+	return new Promise((resolve, reject) => {
+		const sql = "UPDATE users SET black_list = $1 WHERE id = $2";
+		const values = [token, userId];
+		db.query(sql, values, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
+const getBlackList = (token) => {
+	return new Promise((resolve, reject) => {
+		const sql = "SELECT black_list FROM users WHERE token = $1";
+		const values = [token];
+		db.query(sql, values, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
 const forgotPwd = (email, password) => {
 	return new Promise((resolve, reject) => {
 		const sql = "UPDATE users SET password = $1 WHERE email = $2";
@@ -90,5 +145,10 @@ module.exports = {
 	createOTP,
 	getOTP,
   deleteOTP,
+	createToken,
+	getToken,
+	deleteToken,
+	createBlackList,
+	getBlackList,
 	forgotPwd,
 };

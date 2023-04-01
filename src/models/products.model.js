@@ -93,24 +93,29 @@ const insertProducts = (data, fileLink) => {
 	});
 };
 
-const updateProduct = (params, data) => {
+const updateProduct = (params, data, fileLink) => {
 	return new Promise((resolve, reject) => {
-			const sql =
-			"UPDATE products SET name = $1, price = $2, category_id = $3 WHERE id = $4 RETURNING *";
-		const values = [data.name, data.price, data.category_id, params.productId];
+		let sqlColumns = [];
+		let values = [];
+		let index = 1;
 
-		db.query(sql, values, (error, result) => {
-			if (error) return reject(error);
-			resolve(result);
-		});
-	});
-};
+		if (data.name) {
+			sqlColumns.push(`name = $${index++}`);
+			values.push(data.name);
+		}
 
-const updateProductWithFile = (params, data, fileLink) => {
-	return new Promise((resolve, reject) => {
-			const sql =
-			"UPDATE products SET name = $1, price = $2, img = $3, category_id = $4 WHERE id = $5 RETURNING *";
-		const values = [data.name, data.price, fileLink, data.category_id, params.productId];
+		if (data.price) {
+			sqlColumns.push(`price = $${index++}`);
+			values.push(data.price);
+		}
+
+		if (fileLink) {
+			sqlColumns.push(`img = $${index++}`);
+			values.push(fileLink);
+		}
+
+		const sql = `UPDATE products SET ${sqlColumns.join(", ")} WHERE id = $${index} RETURNING *`;
+		values.push(params.productId);
 
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
@@ -137,6 +142,5 @@ module.exports = {
 	nextIdValue,
 	insertProducts,
 	updateProduct,
-	updateProductWithFile,
 	deleteProduct,
 };

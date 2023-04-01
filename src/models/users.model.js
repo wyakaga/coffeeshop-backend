@@ -96,18 +96,48 @@ const insertDetailUsers = (client, userId) => {
 
 const updateUserData = (params, data, fileLink) => {
 	return new Promise((resolve, reject) => {
-		const sql =
-			"UPDATE profiles SET address = $1, display_name = $2, first_name = $3, last_name = $4, birth_date = $5, gender = $6, img = $7 WHERE user_id = $8 RETURNING *";
-		const values = [
-			data.address,
-			data.display_name,
-			data.first_name,
-			data.last_name,
-			data.birth_date,
-			data.gender,
-			fileLink,
-			params.userId,
-		];
+		let sqlColumns = [];
+		let values = [];
+		let index = 1;
+
+		if (data.address) {
+			sqlColumns.push(`address = $${index++}`);
+			values.push(data.address);
+		}
+
+		if (data.display_name) {
+			sqlColumns.push(`display_name = $${index++}`);
+			values.push(data.display_name);
+		}
+
+		if (data.first_name) {
+			sqlColumns.push(`first_name = $${index++}`);
+			values.push(data.first_name);
+		}
+
+		if (data.last_name) {
+			sqlColumns.push(`last_name = $${index++}`);
+			values.push(data.last_name);
+		}
+
+		if (data.birth_date) {
+			sqlColumns.push(`birth_date = $${index++}`);
+			values.push(data.birth_date);
+		}
+
+		if (data.gender) {
+			sqlColumns.push(`gender = $${index++}`);
+			values.push(data.birth_date);
+		}
+
+		if (fileLink) {
+			sqlColumns.push(`img = $${index++}`);
+			values.push(fileLink);
+		}
+
+		const sql = `UPDATE profiles SET ${sqlColumns.join(", ")} WHERE user_id = $${index} RETURNING *`;
+		values.push(params.userId);
+
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
 			resolve(result);

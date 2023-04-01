@@ -68,13 +68,15 @@ const insertUsers = async (req, res) => {
 
 const updateUserData = async (req, res) => {
 	try {
-		const { params, body, file } = req;
+		const { params, body } = req;
 
 		const { data, err, msg } = await uploader(req, "users", params.userId);
 		if (err) throw { msg, err };
 
-		if (!file) return error(res, { status: 400, message: "Image Is Required" });
-		const fileLink = data.secure_url;
+		let fileLink;
+		if (data !== null) {
+			fileLink = data.secure_url;
+		}
 		const result = await usersModel.updateUserData(params, body, fileLink);
 
 		res.status(200).json({

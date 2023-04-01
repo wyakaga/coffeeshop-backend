@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const { error } = require("../utils/response");
 
 const { jwtSecret } = require("../configs/env");
+const authModel = require("../models/auth.model");
 
 const checkToken = (req, res, next) => {
 	const bearerToken = req.header("Authorization");
@@ -12,12 +13,17 @@ const checkToken = (req, res, next) => {
 
 	const token = bearerToken.split(" ")[1];
 
-	jwt.verify(token, jwtSecret, (error, payload) => {
-		if (error && error.name) {
+	jwt.verify(token, jwtSecret, async (err, payload) => {
+		if (err && err.name) {
 			return error(res, { status: 403, message: error.message });
 		}
 
-		if (error) {
+		const blackList = await authModel.getBlackList(token);
+		if (token === blackList.rows[0].black_list) {
+			return error(res, { status: 401, message: "Please Login First" });
+		}
+
+		if (err) {
 			return error(res, { status: 500, message: error.message });
 		}
 

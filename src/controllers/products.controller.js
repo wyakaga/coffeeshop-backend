@@ -67,19 +67,17 @@ const insertProducts = async (req, res) => {
 
 const updateProduct = async (req, res) => {
 	try {
-		const { params, body, file } = req;
+		const { params, body } = req;
 
 		const { data, err, msg } = await uploader(req, "products", params.productId);
 		if (err) throw { msg, err };
 
-		let result;
-		//TODO: better use return, find the way
-		if (!file) {
-			result = await productsModel.updateProduct(params, body);
-		} else {
-			const fileLink = data.secure_url;
-			result = await productsModel.updateProductWithFile(params, body, fileLink);
+		let fileLink;
+		if (data !== null) {
+			fileLink = data.secure_url;
 		}
+		const result = await productsModel.updateProduct(params, body,fileLink);
+
 		res.status(200).json({
 			data: result.rows[0],
 			message: "Updated Successfully",
