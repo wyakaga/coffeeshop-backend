@@ -34,7 +34,7 @@ const getUsers = (query) => {
 const getUserDetail = (params) => {
 	return new Promise((resolve, reject) => {
 		const sql = `SELECT u.email, u.phone_number, p.address, p.display_name, p.first_name, p.last_name, p.birth_date,
-		p.gender
+		p.gender, p.img
 		FROM profiles p
 		JOIN users u on u.id = p.user_id
 		WHERE u.id = $1`;
@@ -52,7 +52,7 @@ const getUserDetail = (params) => {
 
 const getModifiedUser = (userId) => {
 	return new Promise((resolve, reject) => {
-		const sql = `SELECT u.role_id, p.display_name, p.img
+		const sql = `SELECT u.id, u.role_id, p.display_name, p.img
 		FROM profiles p
 		INNER JOIN users u on u.id = user_id
 		WHERE u.id = $1`;
@@ -127,7 +127,7 @@ const updateUserData = (params, data, fileLink) => {
 
 		if (data.gender) {
 			sqlColumns.push(`gender = $${index++}`);
-			values.push(data.birth_date);
+			values.push(data.gender);
 		}
 
 		if (fileLink) {
@@ -137,6 +137,7 @@ const updateUserData = (params, data, fileLink) => {
 
 		const sql = `UPDATE profiles SET ${sqlColumns.join(", ")} WHERE user_id = $${index} RETURNING *`;
 		values.push(params.userId);
+		console.log(fileLink);
 
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
