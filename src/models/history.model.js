@@ -1,28 +1,48 @@
 const db = require("../configs/postgre");
 
-const getHistory = (query) => {
+// const getHistory = (query) => {
+// 	return new Promise((resolve, reject) => {
+// 		let order;
+// 		if (query.order === "cheapest") {
+// 			order = "price ASC";
+// 		}
+// 		if (query.order === "priciest") {
+// 			order = "price DESC";
+// 		}
+// 		//TODO: should use agregation to get the price AKA don't use subtotal!
+// 		const sql = `SELECT p."name" AS "product_name", p."img" AS product_img, hps."subtotal" AS "price", d."method" AS "delivery_method"
+// 		FROM history_products_sizes hps
+// 		INNER JOIN history h ON h.id = hps.history_id
+// 		INNER JOIN products p ON p.id = hps.product_id
+// 		INNER JOIN deliveries d ON d.id = h.delivery_id
+//     WHERE p."name" ILIKE $1
+//     ORDER BY ${order || "h.id ASC"}
+//     LIMIT $2`;
+
+// 		const values = [
+// 			`%${query.search || ""}%`,
+// 			`${query.limit || 5}`,
+// 		];
+
+// 		db.query(sql, values, (err, result) => {
+// 			if (err) return reject(err);
+// 			resolve(result);
+// 		});
+// 	});
+// };
+
+const getHistory = (userId) => {
 	return new Promise((resolve, reject) => {
-		let order;
-		if (query.order === "cheapest") {
-			order = "price ASC";
-		}
-		if (query.order === "priciest") {
-			order = "price DESC";
-		}
-		//TODO: should use agregation to get the price AKA don't use subtotal!
+
+
 		const sql = `SELECT p."name" AS "product_name", p."img" AS product_img, hps."subtotal" AS "price", d."method" AS "delivery_method"
 		FROM history_products_sizes hps
 		INNER JOIN history h ON h.id = hps.history_id
 		INNER JOIN products p ON p.id = hps.product_id
 		INNER JOIN deliveries d ON d.id = h.delivery_id
-    WHERE p."name" ILIKE $1
-    ORDER BY ${order || "h.id ASC"}
-    LIMIT $2`;
+		WHERE user_id = $1`;
 
-		const values = [
-			`%${query.search || ""}%`,
-			`${query.limit || 5}`,
-		];
+		const values = [userId];
 
 		db.query(sql, values, (err, result) => {
 			if (err) return reject(err);

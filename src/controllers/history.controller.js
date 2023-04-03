@@ -4,8 +4,8 @@ const { error } = require("../utils/response");
 
 const getHistory = async (req, res) => {
 	try {
-		const { query } = req;
-		const result = await historyModel.getHistory(query);
+		const { authInfo } = req;
+		const result = await historyModel.getHistory(authInfo.id);
 
 		if (result.rows.length < 1) {
 			return error(res, { status: 404, message: "Data Not Found" });
