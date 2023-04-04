@@ -10,7 +10,8 @@ const app = express();
 const PORT = process.env.SERVER_PORT || 8080;
 const mongoUrl = `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PWD}@${process.env.MONGO_HOST}/?retryWrites=true&w=majority`;
 
-app.use(cors({ origin: "*" }));
+app.use(cors());
+app.options('*', cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(express.static("public"));
