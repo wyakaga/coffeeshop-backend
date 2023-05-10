@@ -35,12 +35,12 @@ const getHistory = (userId) => {
 	return new Promise((resolve, reject) => {
 
 
-		const sql = `SELECT p."name" AS "product_name", p."img" AS product_img, hps."subtotal" AS "price", d."method" AS "delivery_method"
-		FROM history_products_sizes hps
-		INNER JOIN history h ON h.id = hps.history_id
-		INNER JOIN products p ON p.id = hps.product_id
-		INNER JOIN deliveries d ON d.id = h.delivery_id
-		WHERE user_id = $1`;
+		const sql = `SELECT hps.history_id , d.method, p.img, p.name, p.price, hps.product_id
+    FROM history_products_sizes hps
+    JOIN history h  ON h.id = hps.history_id
+    JOIN products p ON p.id = hps.product_id
+    JOIN deliveries d ON d.id = h.delivery_id
+    WHERE h.user_id = $1`;
 
 		const values = [userId];
 
