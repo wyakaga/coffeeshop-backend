@@ -13,7 +13,11 @@ const getProducts = (query) => {
 		const sql = `select p.id, p.name, p.price, p.img, c."name" as "category_name"
 		from products p
 		join categories c on p.category_id = c.id
-		${query.category === undefined ? `where p.name ilike $1 or c."name" ilike $2` : `where p.name ilike $1 and c."name" ilike $2`}
+		${
+			query.category === undefined
+				? `where p.name ilike $1 or c."name" ilike $2`
+				: `where p.name ilike $1 and c."name" ilike $2`
+		}
 		order by ${order || "id asc"}
 		limit $3
 		offset $4`;
@@ -54,8 +58,19 @@ const getProductDetail = (params) => {
 
 const getMetaProducts = (query, fullUrl) => {
 	return new Promise((resolve, reject) => {
-		const sql = "SELECT COUNT(*) AS total_data FROM products";
-		db.query(sql, (err, result) => {
+		let categoryCondition = "";
+		const values = [`%${query.search || ""}%`];
+
+		if (query.category !== undefined) {
+			categoryCondition = ' AND c."name" ilike $2';
+			values.push(`${query.category}%`);
+		}
+
+		const sql = `SELECT COUNT(*) AS total_data FROM products p
+					JOIN categories c ON p.category_id = c.id
+					WHERE p.name ilike $1${categoryCondition}`;
+
+		db.query(sql, values, (err, result) => {
 			if (err) return reject(err);
 			const totalData = parseInt(result.rows[0].total_data);
 			const page = query.page || 1;
@@ -84,7 +99,8 @@ const nextIdValue = () => {
 
 const insertProducts = (data, fileLink) => {
 	return new Promise((resolve, reject) => {
-		const sql = "insert into products (name, price, img, category_id) values ($1, $2, $3, $4) RETURNING *";
+		const sql =
+			"insert into products (name, price, img, category_id) values ($1, $2, $3, $4) RETURNING *";
 		const values = [data.name, data.price, fileLink, data.category_id];
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
