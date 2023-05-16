@@ -100,8 +100,8 @@ const nextIdValue = () => {
 const insertProducts = (data, fileLink) => {
 	return new Promise((resolve, reject) => {
 		const sql =
-			"insert into products (name, price, img, category_id) values ($1, $2, $3, $4) RETURNING *";
-		const values = [data.name, data.price, fileLink, data.category_id];
+			"INSERT INTO products (name, price, img, category_id, description) VALUES ($1, $2, $3, $4, $5) RETURNING *";
+		const values = [data.name, data.price, fileLink, data.category_id, data.description];
 		db.query(sql, values, (error, result) => {
 			if (error) return reject(error);
 			resolve(result);
