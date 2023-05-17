@@ -130,6 +130,16 @@ const updateProduct = (params, data, fileLink) => {
 			values.push(fileLink);
 		}
 
+		if (data.category_id) {
+			sqlColumns.push(`category_id = $${index++}`);
+			values.push(data.category_id);
+		}
+
+		if (data.description) {
+			sqlColumns.push(`description = $${index++}`);
+			values.push(data.description);
+		}
+
 		const sql = `UPDATE products SET ${sqlColumns.join(", ")} WHERE id = $${index} RETURNING *`;
 		values.push(params.productId);
 
