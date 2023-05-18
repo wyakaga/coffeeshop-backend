@@ -132,6 +132,40 @@ const updateTransactionStatus = async (req, res) => {
 	}
 };
 
+const getMonthlyReport = async (req, res) => {
+	try {
+		const result = await historyModel.getMonthlyReport();
+
+		if (result.rows.length < 1) {
+			return error(res, { status: 404, message: "Data Not Found" });
+		}
+
+		res.status(200).json({
+			data: result.rows,
+		});
+	} catch (err) {
+		console.log(err.message);
+		return error(res, { status: 500, message: "Internal Server Error" });
+	}
+};
+
+const getDailyTransactions = async (req, res) => {
+	try {
+		const result = await historyModel.getDailyTransactions();
+
+		if (result.rows.length < 1) {
+			return error(res, { status: 404, message: "Data Not Found" });
+		}
+
+		res.status(200).json({
+			data: result.rows,
+		});
+	} catch (err) {
+		console.log(err.message);
+		return error(res, { status: 500, message: "Internal Server Error" });
+	}
+};
+
 module.exports = {
 	getHistory,
 	getHistoryDetail,
@@ -140,4 +174,6 @@ module.exports = {
 	deleteHistory,
 	getPendingTransaction,
 	updateTransactionStatus,
+	getMonthlyReport,
+	getDailyTransactions,
 };

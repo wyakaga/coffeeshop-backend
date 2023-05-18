@@ -158,6 +158,71 @@ const updateTransactionStatus = (historyId) => {
 	});
 };
 
+const getMonthlyReport = () => {
+	return new Promise((resolve, reject) => {
+		const sql = `SELECT
+				EXTRACT(YEAR FROM DATE_TRUNC('month', m.month_date)) AS year,
+				EXTRACT(MONTH FROM DATE_TRUNC('month', m.month_date)) AS month,
+				COALESCE(SUM(hps.subtotal), 0) AS total_sum
+		FROM (
+				SELECT generate_series(
+						DATE_TRUNC('month', CURRENT_DATE - INTERVAL '6 months'),
+						DATE_TRUNC('month', CURRENT_DATE),
+						'1 month'
+				) AS month_date
+		) AS m
+		LEFT JOIN history h ON DATE_TRUNC('month', h.created_at) = m.month_date
+		LEFT JOIN history_products_sizes hps ON h.id = hps.history_id
+				AND h.created_at >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '6 months')
+		LEFT JOIN status s ON h.status_id = s.id
+		WHERE s.id <> 1 OR s.id IS NULL
+		GROUP BY year, month
+		ORDER BY year, month`;
+
+		db.query(sql, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
+const getDailyTransactions = () => {
+	return new Promise((resolve, reject) => {
+		const sql = `WITH date_range AS (
+				SELECT generate_series(
+						CURRENT_DATE - INTERVAL '6 days',
+						CURRENT_DATE,
+						INTERVAL '1 day'
+				) AS date
+		)
+		SELECT
+				d.date,
+				TRIM(to_char(d.date, 'Day')) AS day_name,
+				COALESCE(ROUND(AVG(hps.subtotal)::numeric), 0) AS average
+		FROM
+				date_range d
+		LEFT JOIN
+				history h ON DATE_TRUNC('day', h.updated_at) = d.date
+		LEFT JOIN
+				history_products_sizes hps ON h.id = hps.history_id
+				AND h.updated_at  >= CURRENT_DATE - INTERVAL '6 days'
+		LEFT JOIN
+				status s ON h.status_id = s.id
+		WHERE
+				s.id <> 1 OR s.id IS NULL
+		GROUP BY
+				d.date,
+				day_name
+		ORDER BY
+				d.date`;
+
+		db.query(sql, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
 module.exports = {
 	getHistory,
 	getHistoryDetail,
@@ -169,4 +234,6 @@ module.exports = {
 	deleteDetailHistory,
 	getPendingTransaction,
 	updateTransactionStatus,
+	getMonthlyReport,
+	getDailyTransactions,
 };
