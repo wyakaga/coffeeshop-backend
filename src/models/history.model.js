@@ -101,10 +101,10 @@ const updateHistory = (params, data) => {
 	});
 };
 
-const deleteHistory = (client, userId) => {
+const deleteHistory = (client, userId, historyId) => {
 	return new Promise((resolve, reject) => {
-		const sql = `DELETE FROM history WHERE user_id = $1 RETURNING id`;
-		const values = [userId];
+		const sql = `DELETE FROM history WHERE user_id = $1 AND id = $2 RETURNING id`;
+		const values = [userId, historyId];
 		client.query(sql, values, (err, result) => {
 			if (err) return reject(err);
 			resolve(result);

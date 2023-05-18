@@ -15,7 +15,7 @@ historyRouter.get("/", checkToken, historyController.getHistory); //* common use
 historyRouter.get("/:historyId", checkToken, historyController.getHistoryDetail);
 historyRouter.post("/", checkToken, historyController.insertHistory); //* common user
 historyRouter.patch("/:historyId", checkRole, checkToken, historyController.updateHistory);
-historyRouter.delete("/", checkRole, checkToken, historyController.deleteHistory); //* common user
+historyRouter.delete("/:historyId", checkToken, historyController.deleteHistory); //* common user
 
 
 module.exports = historyRouter;

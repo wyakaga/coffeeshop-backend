@@ -77,11 +77,11 @@ const updateHistory = async (req, res) => {
 };
 
 const deleteHistory = async (req, res) => {
-	const { authInfo } = req;
+	const { params, authInfo } = req;
 	const client = await db.connect();
 	try {
 		await client.query("BEGIN");
-		const result = await historyModel.deleteHistory(client, authInfo.id);
+		const result = await historyModel.deleteHistory(client, authInfo.id, params.historyId);
 		const historyId = result.rows[0].id;
 		await historyModel.deleteDetailHistory(client, historyId);
 		await client.query("COMMIT");
