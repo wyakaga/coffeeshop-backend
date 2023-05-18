@@ -7,10 +7,15 @@ const historyController = require("../controllers/history.controller");
 
 const historyRouter = Router();
 
-historyRouter.get("/", checkToken, historyController.getHistory);
+//* admin
+historyRouter.get("/status", checkToken, checkRole, historyController.getPendingTransaction);
+historyRouter.patch("/change-status/:historyId", checkToken, checkRole, historyController.updateTransactionStatus);
+
+historyRouter.get("/", checkToken, historyController.getHistory); //* common user
 historyRouter.get("/:historyId", checkToken, historyController.getHistoryDetail);
-historyRouter.post("/", checkToken, historyController.insertHistory);
+historyRouter.post("/", checkToken, historyController.insertHistory); //* common user
 historyRouter.patch("/:historyId", checkRole, checkToken, historyController.updateHistory);
-historyRouter.delete("/", checkRole, checkToken, historyController.deleteHistory);
+historyRouter.delete("/", checkRole, checkToken, historyController.deleteHistory); //* common user
+
 
 module.exports = historyRouter;

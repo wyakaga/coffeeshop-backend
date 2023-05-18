@@ -1,46 +1,16 @@
 const db = require("../configs/postgre");
 
-// const getHistory = (query) => {
-// 	return new Promise((resolve, reject) => {
-// 		let order;
-// 		if (query.order === "cheapest") {
-// 			order = "price ASC";
-// 		}
-// 		if (query.order === "priciest") {
-// 			order = "price DESC";
-// 		}
-// 		//TODO: should use agregation to get the price AKA don't use subtotal!
-// 		const sql = `SELECT p."name" AS "product_name", p."img" AS product_img, hps."subtotal" AS "price", d."method" AS "delivery_method"
-// 		FROM history_products_sizes hps
-// 		INNER JOIN history h ON h.id = hps.history_id
-// 		INNER JOIN products p ON p.id = hps.product_id
-// 		INNER JOIN deliveries d ON d.id = h.delivery_id
-//     WHERE p."name" ILIKE $1
-//     ORDER BY ${order || "h.id ASC"}
-//     LIMIT $2`;
-
-// 		const values = [
-// 			`%${query.search || ""}%`,
-// 			`${query.limit || 5}`,
-// 		];
-
-// 		db.query(sql, values, (err, result) => {
-// 			if (err) return reject(err);
-// 			resolve(result);
-// 		});
-// 	});
-// };
-
 const getHistory = (userId) => {
 	return new Promise((resolve, reject) => {
-
-
-		const sql = `SELECT hps.history_id , d.method, p.img, p.name, p.price, hps.product_id
+		const sql = `SELECT  hps.history_id , d.method, p.img, p.name, p.price, hps.product_id, s.name AS transaction_status, pr.display_name AS buyer_name
     FROM history_products_sizes hps
     JOIN history h  ON h.id = hps.history_id
     JOIN products p ON p.id = hps.product_id
     JOIN deliveries d ON d.id = h.delivery_id
-    WHERE h.user_id = $1`;
+    JOIN status s ON s.id = h.status_id
+    JOIN users u ON u.id = h.user_id
+    JOIN profiles pr ON pr.user_id = u.id
+    WHERE h.user_id = $1 AND h.status_id <> 1 AND u.role_id <> 1`;
 
 		const values = [userId];
 
@@ -94,13 +64,7 @@ const insertHistory = (client, data, userId) => {
 	return new Promise((resolve, reject) => {
 		const sql = `INSERT INTO history (user_id, status_id, promo_id, payment_id, delivery_id)
     VALUES ($1, $2, $3, $4, $5) RETURNING id`;
-		const values = [
-			userId,
-			data.status_id,
-			data.promo_id,
-			data.payment_id,
-			data.delivery_id,
-		];
+		const values = [userId, data.status_id, data.promo_id, data.payment_id, data.delivery_id];
 		client.query(sql, values, (err, result) => {
 			if (err) return reject(err);
 			resolve(result);
@@ -129,10 +93,7 @@ const insertDetailHistory = (client, data, historyId) => {
 const updateHistory = (params, data) => {
 	return new Promise((resolve, reject) => {
 		const sql = `UPDATE history SET status_id = $1 WHERE id = $2 RETURNING *`;
-		const values = [
-			data.status_id,
-			params.historyId,
-		];
+		const values = [data.status_id, params.historyId];
 		db.query(sql, values, (err, result) => {
 			if (err) return reject(err);
 			resolve(result);
@@ -162,6 +123,41 @@ const deleteDetailHistory = (client, historyId) => {
 	});
 };
 
+//* admin
+
+const getPendingTransaction = () => {
+	return new Promise((resolve, reject) => {
+		const sql = `SELECT  hps.history_id , d.method, p.img, p.name, p.price, hps.product_id, s.name AS transaction_status, pr.display_name AS buyer_name
+    FROM history_products_sizes hps
+    JOIN history h  ON h.id = hps.history_id
+    JOIN products p ON p.id = hps.product_id
+    JOIN deliveries d ON d.id = h.delivery_id
+    JOIN status s ON s.id = h.status_id
+    JOIN users u ON u.id = h.user_id
+    JOIN profiles pr ON pr.user_id = u.id
+    WHERE h.status_id = 1 AND u.role_id <> 1
+		ORDER BY h.id ASC`;
+
+		db.query(sql, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
+const updateTransactionStatus = (historyId) => {
+	return new Promise((resolve, reject) => {
+		const sql = `UPDATE history SET status_id = 3, updated_at = NOW() WHERE id = $1 RETURNING *`;
+
+		const values = [historyId];
+
+		db.query(sql, values, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
 module.exports = {
 	getHistory,
 	getHistoryDetail,
@@ -170,5 +166,7 @@ module.exports = {
 	insertDetailHistory,
 	updateHistory,
 	deleteHistory,
-	deleteDetailHistory
+	deleteDetailHistory,
+	getPendingTransaction,
+	updateTransactionStatus,
 };

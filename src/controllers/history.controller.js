@@ -42,11 +42,11 @@ const insertHistory = async (req, res) => {
 	const { authInfo, body } = req;
 	const client = await db.connect();
 	try {
-		await client.query('BEGIN');
+		await client.query("BEGIN");
 		const result = await historyModel.insertHistory(client, body, authInfo.id);
 		const historyId = result.rows[0].id;
 		await historyModel.insertDetailHistory(client, body, historyId);
-		await client.query('COMMIT');
+		await client.query("COMMIT");
 		const resultDetails = await historyModel.getModifiedHistory(client, historyId);
 		client.release();
 		res.status(200).json({
@@ -55,7 +55,7 @@ const insertHistory = async (req, res) => {
 		});
 	} catch (err) {
 		console.log(err.message);
-		await client.query('ROLLBACK');
+		await client.query("ROLLBACK");
 		client.release();
 		return error(res, { status: 500, message: "Internal Server Error" });
 	}
@@ -80,11 +80,11 @@ const deleteHistory = async (req, res) => {
 	const { authInfo } = req;
 	const client = await db.connect();
 	try {
-		await client.query('BEGIN');
+		await client.query("BEGIN");
 		const result = await historyModel.deleteHistory(client, authInfo.id);
 		const historyId = result.rows[0].id;
 		await historyModel.deleteDetailHistory(client, historyId);
-		await client.query('COMMIT');
+		await client.query("COMMIT");
 		const resultDetails = await historyModel.getModifiedHistory(client, historyId);
 		client.release();
 		res.status(200).json({
@@ -93,8 +93,41 @@ const deleteHistory = async (req, res) => {
 		});
 	} catch (err) {
 		console.log(err.message);
-		await client.query('ROLLBACK');
+		await client.query("ROLLBACK");
 		client.release();
+		return error(res, { status: 500, message: "Internal Server Error" });
+	}
+};
+
+//* admin
+const getPendingTransaction = async (req, res) => {
+	try {
+		const result = await historyModel.getPendingTransaction();
+
+		if (result.rows.length < 1) {
+			return error(res, { status: 404, message: "Data Not Found" });
+		}
+
+		res.status(200).json({
+			data: result.rows,
+		});
+	} catch (err) {
+		console.log(err.message);
+		return error(res, { status: 500, message: "Internal Server Error" });
+	}
+};
+
+const updateTransactionStatus = async (req, res) => {
+	try {
+		const { params } = req;
+		const result = await historyModel.updateTransactionStatus(params.historyId);
+
+		res.status(200).json({
+			data: result.rows[0],
+			message: "Updated successfully",
+		});
+	} catch (err) {
+		console.log(err.message);
 		return error(res, { status: 500, message: "Internal Server Error" });
 	}
 };
@@ -105,4 +138,6 @@ module.exports = {
 	insertHistory,
 	updateHistory,
 	deleteHistory,
+	getPendingTransaction,
+	updateTransactionStatus,
 };
