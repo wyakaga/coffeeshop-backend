@@ -17,14 +17,6 @@ app.use(cors({
   optionsSuccessStatus: 204
 }));
 
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-	res.setHeader('Access-Control-Allow-Credentials', 'true');
-  next();
-});
-
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(express.static("public"));
