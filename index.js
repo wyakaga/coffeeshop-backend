@@ -11,7 +11,7 @@ const PORT = process.env.SERVER_PORT || 8080;
 const mongoUrl = `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PWD}@${process.env.MONGO_HOST}/?retryWrites=true&w=majority`;
 
 app.use(cors({
-  origin: "*",
+  origin: ["http://localhost:3000", process.env.CLIENT_HOST],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   preflightContinue: false,
   optionsSuccessStatus: 204
