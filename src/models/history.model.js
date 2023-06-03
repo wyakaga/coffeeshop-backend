@@ -101,6 +101,17 @@ const updateHistory = (params, data) => {
 	});
 };
 
+const checkHistory = (client, historyId) => {
+	return new Promise((resolve, reject) => {
+		const sql = `SELECT COUNT(*) FROM history_products_sizes WHERE history_id = $1`;
+		const values = [historyId];
+		client.query(sql, values, (err, result) => {
+			if (err) return reject(err);
+			resolve(result);
+		});
+	});
+};
+
 const deleteHistory = (client, userId, historyId) => {
 	return new Promise((resolve, reject) => {
 		const sql = `DELETE FROM history WHERE user_id = $1 AND id = $2 RETURNING id`;
@@ -112,10 +123,21 @@ const deleteHistory = (client, userId, historyId) => {
 	});
 };
 
-const deleteDetailHistory = (client, historyId) => {
+const deleteAllDetailHistory = (client, historyId) => {
 	return new Promise((resolve, reject) => {
-		let sql = `DELETE FROM history_products_sizes WHERE history_id = $1`;
-		let values = [historyId];
+		const sql = `DELETE FROM history_products_sizes WHERE history_id = $1`;
+		const values = [historyId];
+		client.query(sql, values, (err) => {
+			if (err) return reject(err);
+			resolve();
+		});
+	});
+};
+
+const deleteDetailHistory = (client, historyId, productId) => {
+	return new Promise((resolve, reject) => {
+		const sql = `DELETE FROM history_products_sizes WHERE history_id = $1 AND product_id = $2`;
+		const values = [historyId, productId];
 		client.query(sql, values, (err) => {
 			if (err) return reject(err);
 			resolve();
@@ -230,7 +252,9 @@ module.exports = {
 	insertHistory,
 	insertDetailHistory,
 	updateHistory,
+	checkHistory,
 	deleteHistory,
+	deleteAllDetailHistory,
 	deleteDetailHistory,
 	getPendingTransaction,
 	updateTransactionStatus,

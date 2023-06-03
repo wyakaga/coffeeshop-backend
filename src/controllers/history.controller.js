@@ -77,20 +77,42 @@ const updateHistory = async (req, res) => {
 };
 
 const deleteHistory = async (req, res) => {
-	const { params, authInfo } = req;
+	const { params, query, authInfo } = req;
 	const client = await db.connect();
+
 	try {
 		await client.query("BEGIN");
-		const result = await historyModel.deleteHistory(client, authInfo.id, params.historyId);
-		const historyId = result.rows[0].id;
-		await historyModel.deleteDetailHistory(client, historyId);
+		const countResult = await historyModel.checkHistory(client, params.historyId);
+		const count = countResult.rows[0].count;
+
+		let historyId = null;
+
+		if (count < 2) {
+			await historyModel.deleteAllDetailHistory(client, params.historyId);
+		} else {
+			await historyModel.deleteDetailHistory(client, params.historyId, query.productId);
+		}
+
+		if (count < 2) {
+			const result = await historyModel.deleteHistory(client, authInfo.id, params.historyId);
+			historyId = result.rows[0].id;
+		}
+
 		await client.query("COMMIT");
-		const resultDetails = await historyModel.getModifiedHistory(client, historyId);
-		client.release();
-		res.status(200).json({
-			data: resultDetails.rows,
-			message: "Successfully Deleted",
-		});
+
+		if (historyId) {
+			const resultDetails = await historyModel.getModifiedHistory(client, historyId);
+			client.release();
+			return res.status(200).json({
+				data: resultDetails.rows,
+				message: "Successfully Deleted",
+			});
+		} else {
+			client.release();
+			return res.status(200).json({
+				message: "Successfully Deleted",
+			});
+		}
 	} catch (err) {
 		console.log(err.message);
 		await client.query("ROLLBACK");
