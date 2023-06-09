@@ -2,7 +2,7 @@ const usersModel = require("../models/users.model");
 const authModel = require("../models/auth.model");
 const db = require("../configs/postgre");
 const { error } = require("../utils/response");
-const { uploader } = require("../utils/cloudinary");
+const { uploader, deleter } = require("../utils/cloudinary");
 
 const getUsers = async (req, res) => {
 	try {
@@ -89,6 +89,34 @@ const updateUserData = async (req, res) => {
 	}
 };
 
+const deleteUserImage = async (req, res) => {
+	try {
+		const { params } = req;
+
+		const checkUser = await usersModel.getUserDetail(params);
+
+		if (!checkUser.rows.length) {
+			return error(res, { status: 404, message: "Data Not Found" });
+		}
+
+		if (checkUser.rows[0].img) {
+			const { data, err, message } = await deleter(checkUser.rows[0].img);
+			if (err) throw { message, err };
+			console.log("user image", data);
+		}
+
+		const result = await usersModel.deleteImageUser(params);
+
+		res.status(200).json({
+			data: result.rows,
+			message: "Successfully Deleted",
+		});
+	} catch (err) {
+		console.log(err.message);
+		return error(res, { status: 500, message: "Internal Server Error" });
+	}
+};
+
 const deleteUser = async (req, res) => {
 	const { authInfo } = req;
 	const client = await db.connect();
@@ -118,4 +146,5 @@ module.exports = {
 	insertUsers,
 	updateUserData,
 	deleteUser,
+	deleteUserImage,
 };

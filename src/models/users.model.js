@@ -135,7 +135,9 @@ const updateUserData = (params, data, fileLink) => {
 			values.push(fileLink);
 		}
 
-		const sql = `UPDATE profiles SET ${sqlColumns.join(", ")} WHERE user_id = $${index} RETURNING *`;
+		const sql = `UPDATE profiles SET ${sqlColumns.join(
+			", "
+		)} WHERE user_id = $${index} RETURNING *`;
 		values.push(params.userId);
 		console.log(fileLink);
 
@@ -168,6 +170,18 @@ const deleteDetailUsers = (client, userId) => {
 	});
 };
 
+const deleteImageUser = (params) => {
+	return new Promise((resolve, reject) => {
+		const sql = `UPDATE profiles SET img = null WHERE user_id = $1 RETURNING *`;
+		const values = [params.userId];
+
+		db.query(sql, values, (error, result) => {
+			if (error) return reject(error);
+			resolve(result);
+		});
+	});
+};
+
 module.exports = {
 	getUsers,
 	getUserDetail,
@@ -177,4 +191,5 @@ module.exports = {
 	updateUserData,
 	deleteUser,
 	deleteDetailUsers,
+	deleteImageUser,
 };

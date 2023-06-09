@@ -9,7 +9,13 @@ const usersRouter = Router();
 usersRouter.get("/", checkToken, usersController.getUsers);
 usersRouter.get("/:userId", checkToken, usersController.getUserDetail);
 usersRouter.post("/", usersController.insertUsers);
-usersRouter.patch("/:userId", checkToken, memoryUpload.single("img"), usersController.updateUserData);
+usersRouter.patch(
+	"/:userId",
+	checkToken,
+	memoryUpload.single("img"),
+	usersController.updateUserData
+);
 usersRouter.delete("/", checkToken, usersController.deleteUser);
+usersRouter.delete("/:userId", checkToken, usersController.deleteUserImage);
 
 module.exports = usersRouter;
