@@ -1,6 +1,6 @@
 <h1 id="title" align="center">Coffee Shop Backend</h1>
 
-This repository contains codes for "Coffee Shop" [website](https://github.com/wyakaga/coffeeshop-fe) / [mobile app](https://github.com/wyakaga/coffee-shop-mobile) server
+"Coffee Shop" is an API built using Express.js. Users can create accounts, view menus, and place orders for pickup or delivery.
 
 <h2>💻 Built with</h2>
 
