@@ -1,11 +1,11 @@
 const productsModel = require("../models/products.model");
 const { error } = require("../utils/response");
-const { uploader } = require("../utils/cloudinary");
+const { uploader, deleter } = require("../utils/cloudinary");
 
 const getProducts = async (req, res) => {
 	try {
 		const { query } = req;
-		const fullUrl = req.protocol + '://' + req.get('host');
+		const fullUrl = req.protocol + "://" + req.get("host");
 		const result = await productsModel.getProducts(query);
 
 		if (result.rows.length < 1) {
@@ -51,7 +51,7 @@ const insertProducts = async (req, res) => {
 		const { data, err, msg } = await uploader(req, "products", nextValue);
 		if (err) throw { msg, err };
 
-		if (!file) return error(res, { status:400, message: "Image Is Required" });
+		if (!file) return error(res, { status: 400, message: "Image Is Required" });
 		const fileLink = data.secure_url;
 		const result = await productsModel.insertProducts(body, fileLink);
 
@@ -76,7 +76,7 @@ const updateProduct = async (req, res) => {
 		if (data !== null) {
 			fileLink = data.secure_url;
 		}
-		const result = await productsModel.updateProduct(params, body,fileLink);
+		const result = await productsModel.updateProduct(params, body, fileLink);
 
 		res.status(200).json({
 			data: result.rows[0],
@@ -91,7 +91,21 @@ const updateProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
 	try {
 		const { params } = req;
+
+		const checkProduct = await productsModel.getProductDetail(params);
+
+		if (!checkProduct.rows.length) {
+			return error(res, { status: 404, message: "Data Not Found" });
+		}
+
+		if (checkProduct.rows[0].img) {
+			const { data, err, message } = await deleter(checkProduct.rows[0].img);
+			if (err) throw { message, err };
+			console.log("product image", data);
+		}
+
 		const result = await productsModel.deleteProduct(params);
+
 		res.status(200).json({
 			data: result.rows,
 			message: "Deleted Successfully",
