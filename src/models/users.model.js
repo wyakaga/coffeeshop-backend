@@ -52,7 +52,7 @@ const getUserDetail = (params) => {
 
 const getModifiedUser = (userId) => {
 	return new Promise((resolve, reject) => {
-		const sql = `SELECT u.id, u.role_id, p.display_name, p.img
+		const sql = `SELECT u.id, u.role_id, u.email, p.display_name, p.img
 		FROM profiles p
 		INNER JOIN users u on u.id = user_id
 		WHERE u.id = $1`;
@@ -100,22 +100,22 @@ const updateUserData = (params, data, fileLink) => {
 		let values = [];
 		let index = 1;
 
-		if (data.address) {
+		if (data.address !== "null") {
 			sqlColumns.push(`address = $${index++}`);
 			values.push(data.address);
 		}
 
-		if (data.display_name) {
+		if (data.display_name !== "null") {
 			sqlColumns.push(`display_name = $${index++}`);
 			values.push(data.display_name);
 		}
 
-		if (data.first_name) {
+		if (data.first_name !== "null") {
 			sqlColumns.push(`first_name = $${index++}`);
 			values.push(data.first_name);
 		}
 
-		if (data.last_name) {
+		if (data.last_name !== "null") {
 			sqlColumns.push(`last_name = $${index++}`);
 			values.push(data.last_name);
 		}
