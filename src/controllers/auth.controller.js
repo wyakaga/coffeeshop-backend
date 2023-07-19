@@ -100,18 +100,18 @@ const createOTP = async (req, res) => {
 
     const otp = generateOTP();
     const result = await authModel.createOTP(otp, email);
-		const userData = await usersModel.getModifiedUser(result.rows[0].id);
 
     if (result.rows < 1) {
       return;
     }
 
-    sendEmail({
+    const userData = await usersModel.getModifiedUser(result.rows[0].id);
+    await sendEmail({
       to: email,
       subject: 'Coffee Shop forgot password',
       otp,
       client: process.env.CLIENT_HOST,
-      user: userData.rows[0].display_name || "user",
+      user: userData.rows[0].display_name || 'user',
     });
 
     res.status(200).json({
