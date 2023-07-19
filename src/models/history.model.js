@@ -265,6 +265,64 @@ const getDailyTransactions = () => {
   });
 };
 
+const getReports = (sortBy) => {
+  return new Promise((resolve, reject) => {
+    const setSql = (sortBy) => {
+      if (sortBy === 'month') {
+        return `SELECT TO_CHAR(dates.month, 'Mon') AS month,
+                  COALESCE(SUM(qty * subtotal), 0) AS monthly_total
+                FROM (
+                  SELECT DATE_TRUNC('month', CURRENT_DATE) - (interval '1 month' * generate_series(0, 5)) AS month
+                ) AS dates
+                LEFT JOIN history_products_sizes hps
+                  ON hps.created_at::date >= dates.month
+                  AND hps.created_at::date < dates.month + interval '1 month'
+                  AND hps.status_id <> 1
+                GROUP BY dates.month
+                ORDER BY MIN(dates.month)`;
+      }
+
+      if (sortBy === 'week') {
+        return `SELECT TO_CHAR(dates.week, 'YYYY-MM-DD') AS week,
+                  COALESCE(SUM(qty * subtotal), 0) AS weekly_total
+                FROM (
+                  SELECT DATE_TRUNC('week', CURRENT_DATE) - (interval '1 week' * generate_series(0, 5)) AS week
+                ) AS dates
+                LEFT JOIN history_products_sizes hps
+                  ON hps.created_at::date >= dates.week
+                  AND hps.created_at::date < dates.week + interval '1 week'
+                  AND hps.status_id <> 1
+                GROUP BY dates.week
+                ORDER BY MIN(dates.week)`;
+      }
+
+      if (sortBy === 'day') {
+        return `SELECT TO_CHAR(dates.day, 'Dy') AS day,
+                  COALESCE(SUM(qty * subtotal), 0) AS daily_total
+                FROM (
+                  SELECT CURRENT_DATE - generate_series(0, 6) AS day
+                ) AS dates
+                LEFT JOIN history_products_sizes hps
+                  ON hps.created_at::date = dates.day
+                  AND hps.status_id <> 1
+                GROUP BY TO_CHAR(dates.day, 'Dy')
+                ORDER BY MIN(dates.day)`;
+      }
+    };
+
+    if (
+      !sortBy ||
+      (sortBy !== 'month' && sortBy !== 'week' && sortBy !== 'day')
+    )
+      sortBy = 'month';
+
+    db.query(setSql(sortBy), (err, result) => {
+      if (err) return reject(err);
+      resolve(result);
+    });
+  });
+};
+
 module.exports = {
   getHistory,
   getHistoryDetail,
@@ -281,4 +339,5 @@ module.exports = {
   updateTransactionStatusDetail,
   getMonthlyReport,
   getDailyTransactions,
+  getReports,
 };

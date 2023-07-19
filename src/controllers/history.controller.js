@@ -216,6 +216,20 @@ const getDailyTransactions = async (req, res) => {
   }
 };
 
+const getReports = async (req, res) => {
+  const { sortBy } = req.query;
+
+  try {
+    const result = await historyModel.getReports(sortBy);
+    res.status(200).json({
+      data: result.rows,
+    });
+  } catch (err) {
+    console.log(err.message);
+    return error(res, { status: 500, message: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   getHistory,
   getHistoryDetail,
@@ -226,4 +240,5 @@ module.exports = {
   updateTransactionStatus,
   getMonthlyReport,
   getDailyTransactions,
+  getReports,
 };

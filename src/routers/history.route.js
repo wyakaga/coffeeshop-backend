@@ -22,6 +22,7 @@ historyRouter.get(
 	checkRole,
 	historyController.getDailyTransactions
 );
+historyRouter.get("/reports", checkToken, checkRole, historyController.getReports);
 
 historyRouter.get("/", checkToken, historyController.getHistory); //* common user
 historyRouter.get("/:historyId", checkToken, historyController.getHistoryDetail);

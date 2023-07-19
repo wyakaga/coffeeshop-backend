@@ -41,7 +41,7 @@ const editPassword = (newPwd, userId) => {
 
 const createOTP = (otp, email) => {
 	return new Promise((resolve, reject) => {
-		const sql = "UPDATE users SET otp = $1 WHERE email = $2 RETURNING otp";
+		const sql = "UPDATE users SET otp = $1 WHERE email = $2 RETURNING otp, id";
 		const values = [otp, email];
 		db.query(sql, values, (err, result) => {
 			if (err) return reject(err);

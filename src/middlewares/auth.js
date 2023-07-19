@@ -2,9 +2,9 @@ const jwt = require("jsonwebtoken");
 const { error } = require("../utils/response");
 
 const { jwtSecret } = require("../configs/env");
-const authModel = require("../models/auth.model");
+const redisClient = require("../configs/redis");
 
-const checkToken = (req, res, next) => {
+const checkToken = async (req, res, next) => {
 	const bearerToken = req.header("Authorization");
 
 	if (!bearerToken) {
@@ -15,19 +15,23 @@ const checkToken = (req, res, next) => {
 
 	jwt.verify(token, jwtSecret, async (err, payload) => {
 		if (err && err.name) {
-			return error(res, { status: 403, message: error.message });
+			return error(res, { status: 403, message: err.message });
 		}
 
-		const blackList = await authModel.getBlackList(token);
-		if (token === blackList.rows[0].black_list) {
-			return error(res, { status: 401, message: "Please Login First" });
+		redisClient.on("error", err => console.log("[Redis error] " + err));
+		await redisClient.connect();
+		const blTokenList = await redisClient.get(`bl_${token}`);
+		if (blTokenList) {
+			return error(res, { status: 401, message: "Invalid token" });
 		}
+		await redisClient.disconnect();
 
 		if (err) {
-			return error(res, { status: 500, message: error.message });
+			return error(res, { status: 500, message: err.message });
 		}
 
 		req.authInfo = payload;
+		req.token = token;
 		next();
 	});
 };
