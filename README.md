@@ -10,6 +10,8 @@ Technologies used in the project:
 *   [ExpressJS](https://expressjs.com/)
 *   [PostgreSQL](https://www.postgresql.org/)
 *   [MongoDB](https://www.mongodb.com)
+*   [Redis](https://redis.io/)
+*   [Nodemailer](https://nodemailer.com)
 *   [JWT](https://github.com/auth0/node-jsonwebtoken)
 
 <h2>🛠️ Installation Steps:</h2>
@@ -37,6 +39,7 @@ npm install
 ```env
 SERVER_PORT = [your server port]
 JWT_SECRET = [your JWT secret]
+CLIENT_HOST = [your client host/frontend]
 
 DB_HOST = [your database host]
 DB_NAME = [your database name]
@@ -52,6 +55,19 @@ CLOUD_NAME = [your Cloudinary name]
 CLOUD_KEY = [your Cloudinary key]
 CLOUD_SECRET = [your Cloudinary secret]
 CLOUD_FOLDER = [your Cloudinary folder]
+
+REDIS_USER = [your Redis user]
+REDIS_PWD = [your Redis password]
+REDIS_HOST = [your Redis host]
+REDIS_PORT = [your Redis port]
+
+MAIL_SERVICE = [your Mail service]
+MAIL_AUTH_TYPE = [your Mail service auth type]
+MAIL_USER = [your Mail service username]
+MAIL_CLIENT_ID = [your Mail service client id]
+MAIL_CLIENT_SECRET = [your Mail service client secret]
+MAIL_REFRESH_TOKEN = [your Mail service refresh token]
+ACCESS_TOKEN = [your Mail service access token]
 ```
 
 <p>5. Run the development server with npm</p>
@@ -70,7 +86,7 @@ You can click [here](https://documenter.getpostman.com/view/26776035/2s93m4ZPDq)
 
 <h2>Database structure</h2>
 
-<img src="https://i.imgur.com/bab38NF.png" alt="database structure">
+<img src="https://i.imgur.com/nmQIw6Y.png" alt="database structure">
 
 Or you can view the detail [here](https://dbdiagram.io/d/6488f350722eb77494e937e7)
 

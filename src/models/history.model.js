@@ -270,7 +270,7 @@ const getReports = (sortBy) => {
     const setSql = (sortBy) => {
       if (sortBy === 'month') {
         return `SELECT TO_CHAR(dates.month, 'Mon') AS month,
-                  COALESCE(SUM(qty * subtotal), 0) AS monthly_total
+                  COALESCE(SUM(subtotal), 0) AS monthly_total
                 FROM (
                   SELECT DATE_TRUNC('month', CURRENT_DATE) - (interval '1 month' * generate_series(0, 5)) AS month
                 ) AS dates
@@ -284,7 +284,7 @@ const getReports = (sortBy) => {
 
       if (sortBy === 'week') {
         return `SELECT TO_CHAR(dates.week, 'YYYY-MM-DD') AS week,
-                  COALESCE(SUM(qty * subtotal), 0) AS weekly_total
+                  COALESCE(SUM(subtotal), 0) AS weekly_total
                 FROM (
                   SELECT DATE_TRUNC('week', CURRENT_DATE) - (interval '1 week' * generate_series(0, 5)) AS week
                 ) AS dates
@@ -298,7 +298,7 @@ const getReports = (sortBy) => {
 
       if (sortBy === 'day') {
         return `SELECT TO_CHAR(dates.day, 'Dy') AS day,
-                  COALESCE(SUM(qty * subtotal), 0) AS daily_total
+                  COALESCE(SUM(subtotal), 0) AS daily_total
                 FROM (
                   SELECT CURRENT_DATE - generate_series(0, 6) AS day
                 ) AS dates
