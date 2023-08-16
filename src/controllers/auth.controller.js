@@ -114,6 +114,10 @@ const createOTP = async (req, res) => {
       user: userData.rows[0].display_name || 'user',
     });
 
+    setTimeout(async () => {
+      await authModel.deleteOTP(email);
+    }, 5 * 60 * 1000);
+
     res.status(200).json({
       message: 'Succesfully sent',
     });
